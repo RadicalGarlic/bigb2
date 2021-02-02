@@ -11,6 +11,7 @@ SRC = src/bbb2/Bbb2.java\
       src/bbb2/util/http/HttpClientProxy.java\
       src/bbb2/util/http/HttpClientProxyBuilder.java\
       src/bbb2/util/http/HttpException.java\
+      src/bbb2/util/http/HttpStatusCodes.java\
       src/bbb2/util/http/RealClient.java\
       src/bbb2/util/json/JsonObjectProxy.java\
       src/bbb2/util/json/JsonParseException.java
