@@ -1,5 +1,6 @@
 package mocks;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
@@ -11,7 +12,6 @@ import javax.net.ssl.SSLSession;
 
 import bbb2.api.Api;
 import bbb2.util.http.HttpClientProxy;
-import bbb2.util.http.HttpException;
 import bbb2.util.http.HttpStatusCodes;
 
 public class TestHttpClientProxy implements HttpClientProxy
@@ -71,7 +71,8 @@ public class TestHttpClientProxy implements HttpClientProxy
         private HttpRequest req;
     }
 
-    public HttpResponse<String> send(HttpRequest req) throws HttpException
+    public HttpResponse<String> send(HttpRequest req)
+    throws InterruptedException, IOException
     {
         if ("/b2api/v2/b2_authorize_account".equals(req.uri().getPath()))
         {

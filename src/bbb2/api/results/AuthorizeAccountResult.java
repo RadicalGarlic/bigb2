@@ -24,7 +24,9 @@ public class AuthorizeAccountResult
         }
         catch (JsonParseException e)
         {
-            throw new ApiResponseParseException(e);
+            StringBuilder s = new StringBuilder();
+            s.append("ApiReponse=\"" + jsonString + "\".");
+            throw new ApiResponseParseException(s.toString(), e);
         }
         catch (MalformedURLException e)
         {

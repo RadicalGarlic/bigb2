@@ -12,10 +12,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Base64;
 
 import bbb2.ExitCode;
-import bbb2.api.ApiConnectException;
-import bbb2.api.ApiResponseParseException;
 import bbb2.api.results.AuthorizeAccountResult;
-import bbb2.util.http.HttpException;
 import bbb2.util.http.HttpClientProxy;
 import bbb2.util.http.HttpClientProxyBuilder;
 
@@ -23,7 +20,7 @@ public class Api
 {
     public static AuthorizeAccountResult authorizeAccount(String keyId,
                                                           String appKey)
-    throws ApiConnectException, ApiResponseParseException
+    throws ApiResponseParseException, InterruptedException, IOException
     {
         try
         {
@@ -62,13 +59,9 @@ public class Api
             System.exit(ExitCode.PROGRAM_ERROR);
             return null;
         }
-        catch (HttpException e)
-        {
-            throw new ApiConnectException(e);
-        }
     }
 
-    public static URI getAuthUri()
+    private static URI getAuthUri()
     {
         try
         {

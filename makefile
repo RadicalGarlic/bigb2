@@ -1,16 +1,13 @@
 .PHONY: all test clean
 
 SRC = src/bbb2/Bbb2.java\
-      src/bbb2/Bbb2Exception.java\
       src/bbb2/ExitCode.java\
       src/bbb2/api/Api.java\
-      src/bbb2/api/ApiConnectException.java\
-      src/bbb2/api/ApiResponseParseException.java\
       src/bbb2/api/ApiProxy.java\
+      src/bbb2/api/ApiResponseParseException.java\
       src/bbb2/api/results/AuthorizeAccountResult.java\
       src/bbb2/util/http/HttpClientProxy.java\
       src/bbb2/util/http/HttpClientProxyBuilder.java\
-      src/bbb2/util/http/HttpException.java\
       src/bbb2/util/http/HttpStatusCodes.java\
       src/bbb2/util/http/RealClient.java\
       src/bbb2/util/json/JsonObjectProxy.java\

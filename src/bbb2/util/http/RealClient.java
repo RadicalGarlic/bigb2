@@ -15,7 +15,8 @@ public class RealClient implements HttpClientProxy
         internalClient = HttpClient.newHttpClient();
     }
 
-    public HttpResponse<String> send(HttpRequest req) throws HttpException
+    public HttpResponse<String> send(HttpRequest req)
+    throws InterruptedException, IOException
     {
         try
         {
@@ -28,17 +29,11 @@ public class RealClient implements HttpClientProxy
             System.exit(ExitCode.PROGRAM_ERROR);
             return null;
         }
-        catch (InterruptedException e)
-        {
-            throw new HttpException(e);
-        }
-        catch (IOException e)
-        {
-            throw new HttpException(e);
-        }
         catch (SecurityException e)
         {
-            throw new HttpException(e);
+            e.printStackTrace();
+            System.exit(ExitCode.PROGRAM_ERROR);
+            return null;
         }
     }
 
