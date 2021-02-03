@@ -11,8 +11,11 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Base64;
 
+import javax.json.Json;
+
 import bbb2.ExitCode;
 import bbb2.api.results.AuthorizeAccountResult;
+import bbb2.api.results.StartLargeFileResult;
 import bbb2.util.http.HttpClientProxy;
 import bbb2.util.http.HttpClientProxyBuilder;
 
@@ -59,6 +62,31 @@ public class Api
             System.exit(ExitCode.PROGRAM_ERROR);
             return null;
         }
+    }
+
+    public static
+    StartLargeFileResult startLargeFile(AuthorizeAccountResult auth,
+                                        String bucketId, String fileName)
+    throws ApiResponseParseException, InterruptedException, IOException
+    {
+        String reqBody = Json.createObjectBuilder()
+                             .add("bucketId", bucketId)
+                             .add("fileName", fileName)
+                             .add("contentType", "application/octet-stream")
+                             .build()
+                             .toString();
+
+        HttpRequest.Builder reqBuilder = HttpRequest.newBuilder();
+        HttpRequest req = reqBuilder.uri(getAuthUri())
+                                    .POST(HttpRequest.BodyPublishers
+                                                     .ofString(reqBody))
+                                    .header("Authorization", auth.authToken)
+                                    .build();
+
+        HttpClientProxy client = HttpClientProxyBuilder.build();
+        HttpResponse<String> res = client.send(req);
+
+        return new StartLargeFileResult(res.body());
     }
 
     private static URI getAuthUri()
