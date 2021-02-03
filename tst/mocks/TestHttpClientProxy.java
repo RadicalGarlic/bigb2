@@ -16,7 +16,7 @@ import bbb2.util.http.HttpStatusCodes;
 
 public class TestHttpClientProxy implements HttpClientProxy
 {
-    private class MockResponse<String> implements HttpResponse<String>
+    public static class MockResponse<String> implements HttpResponse<String>
     {
         public MockResponse(HttpHeaders inHeaders, String inBody,
                             HttpRequest inReq)

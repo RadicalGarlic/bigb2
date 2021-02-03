@@ -23,7 +23,8 @@ public class Api
 {
     public static AuthorizeAccountResult authorizeAccount(String keyId,
                                                           String appKey)
-    throws ApiResponseParseException, InterruptedException, IOException
+    throws ApiErrorException, ApiResponseParseException, InterruptedException,
+           IOException
     {
         try
         {
@@ -41,7 +42,7 @@ public class Api
             HttpClientProxy client = HttpClientProxyBuilder.build();
             HttpResponse<String> res = client.send(req);
 
-            return new AuthorizeAccountResult(res.body());
+            return new AuthorizeAccountResult(res);
         }
         catch (UnsupportedCharsetException e)
         {
@@ -67,7 +68,8 @@ public class Api
     public static
     StartLargeFileResult startLargeFile(AuthorizeAccountResult auth,
                                         String bucketId, String fileName)
-    throws ApiResponseParseException, InterruptedException, IOException
+    throws ApiErrorException, ApiResponseParseException, InterruptedException,
+           IOException
     {
         String reqBody = Json.createObjectBuilder()
                              .add("bucketId", bucketId)
@@ -84,9 +86,8 @@ public class Api
                                     .build();
 
         HttpClientProxy client = HttpClientProxyBuilder.build();
-        HttpResponse<String> res = client.send(req);
 
-        return new StartLargeFileResult(res.body());
+        return new StartLargeFileResult(client.send(req));
     }
 
     private static URI getAuthUri()

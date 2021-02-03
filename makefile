@@ -4,6 +4,7 @@ SRC = src/bbb2/Bbb2.java\
       src/bbb2/ExitCode.java\
       src/bbb2/api/Api.java\
       src/bbb2/api/ApiProxy.java\
+      src/bbb2/api/ApiErrorException.java\
       src/bbb2/api/ApiResponseParseException.java\
       src/bbb2/api/results/AuthorizeAccountResult.java\
       src/bbb2/api/results/StartLargeFileResult.java\
@@ -11,6 +12,7 @@ SRC = src/bbb2/Bbb2.java\
       src/bbb2/util/http/HttpClientProxyBuilder.java\
       src/bbb2/util/http/HttpStatusCodes.java\
       src/bbb2/util/http/RealClient.java\
+      src/bbb2/util/http/Stringer.java\
       src/bbb2/util/json/JsonObjectProxy.java\
       src/bbb2/util/json/JsonParseException.java
 
@@ -25,7 +27,7 @@ JUNIT_JAR = extern/junit-platform-console-standalone-1.7.0.jar
 
 all:
 	javac -d bin -classpath $(JSON_JAR) $(SRC)
-	javac -d tst/bin -classpath $(JUNIT_JAR):$(JSON_JAR) $(SRC) $(TST)
+	javac -Xlint:unchecked -d tst/bin -classpath $(JUNIT_JAR):$(JSON_JAR) $(SRC) $(TST)
 
 test: all
 	java -jar $(JUNIT_JAR) --classpath tst/bin:bin:$(JSON_JAR) --scan-class-path --disable-ansi-colors

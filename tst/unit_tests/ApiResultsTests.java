@@ -1,10 +1,11 @@
 import java.net.URL;
 
-import bbb2.api.ApiResponseParseException;
-import bbb2.api.results.AuthorizeAccountResult;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import bbb2.api.ApiResponseParseException;
+import bbb2.api.results.AuthorizeAccountResult;
+import mocks.TestHttpClientProxy;
 
 class ApiResultsTests
 {
@@ -36,7 +37,8 @@ class ApiResultsTests
 
         try
         {
-            AuthorizeAccountResult result = new AuthorizeAccountResult(test);
+            TestHttpClientProxy.MockResponse<String> res = new TestHttpClientProxy.MockResponse(null, test, null);
+            AuthorizeAccountResult result = new AuthorizeAccountResult(res);
             Assertions.assertEquals("YOUR_ACCOUNT_ID", result.accountId);
             Assertions.assertEquals("4_0022623512fc8f80000000001_0186e431_d18d02_acct_tH7VW03boebOXayIc43-sxptpfA=",
                                     result.authToken);
@@ -47,7 +49,7 @@ class ApiResultsTests
             Assertions.assertEquals(5000000, result.minPartSizeBytes);
             Assertions.assertEquals(100000000, result.recPartSizeBytes);
         }
-        catch (ApiResponseParseException e)
+        catch (Exception e)
         {
             e.printStackTrace();
             Assertions.fail();
