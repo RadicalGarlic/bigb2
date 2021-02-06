@@ -6,14 +6,14 @@ import bbb2.api.ApiProxy;
 import bbb2.api.results.AuthorizeAccountResult;
 import bbb2.util.http.HttpClientProxyBuilder;
 
-import mocks.TestHttpClientProxy;
+import mocks.MockHttpClientProxy;
 
 public class ApiProxyTests
 {
     @BeforeAll
     public static void setup()
     {
-        HttpClientProxyBuilder.mock = new TestHttpClientProxy();
+        HttpClientProxyBuilder.mock = new MockHttpClientProxy();
     }
 
     @Test

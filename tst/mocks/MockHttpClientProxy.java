@@ -7,76 +7,21 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Optional;
-import javax.net.ssl.SSLSession;
 
 import bbb2.api.Api;
 import bbb2.util.http.HttpClientProxy;
 import bbb2.util.http.HttpStatusCodes;
 
-public class TestHttpClientProxy implements HttpClientProxy
+import mocks.MockHttpResponse;
+
+public class MockHttpClientProxy implements HttpClientProxy
 {
-    public static class MockResponse<String> implements HttpResponse<String>
-    {
-        public MockResponse(HttpHeaders inHeaders, String inBody,
-                            HttpRequest inReq)
-        {
-            varHeaders = inHeaders;
-            varBody = inBody;
-            req = inReq;
-        }
-
-        public String body()
-        {
-            return varBody;
-        }
-
-        public HttpHeaders headers()
-        {
-            return varHeaders;
-        }
-
-        public HttpClient.Version version()
-        {
-            return null;
-        }
-
-        public URI uri()
-        {
-            return null;
-        }
-
-        public Optional<SSLSession> sslSession()
-        {
-            return null;
-        }
-
-        public Optional<HttpResponse<String>> previousResponse()
-        {
-            return null;
-        }
-
-        public HttpRequest request()
-        {
-            return req;
-        }
-
-        public int statusCode()
-        {
-            return HttpStatusCodes.OK.getInt();
-        }
-
-        private HttpHeaders varHeaders;
-        private String varBody;
-        private HttpRequest req;
-    }
-
     public HttpResponse<String> send(HttpRequest req)
     throws InterruptedException, IOException
     {
         if ("/b2api/v2/b2_authorize_account".equals(req.uri().getPath()))
         {
-            return new MockResponse<String>(null, RESPONSE_AUTH_BODY, req);
+            return new MockHttpResponse<String>(null, RESPONSE_AUTH_BODY, req);
         }
 
         return null;

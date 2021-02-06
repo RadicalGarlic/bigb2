@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import bbb2.api.ApiResponseParseException;
 import bbb2.api.results.AuthorizeAccountResult;
-import mocks.TestHttpClientProxy;
+import mocks.MockHttpClientProxy;
+import mocks.MockHttpResponse;
 
 class ApiResultsTests
 {
@@ -37,7 +38,9 @@ class ApiResultsTests
 
         try
         {
-            TestHttpClientProxy.MockResponse<String> res = new TestHttpClientProxy.MockResponse(null, test, null);
+            MockHttpResponse<String> res
+            = new MockHttpResponse<String>(null, test, null);
+
             AuthorizeAccountResult result = new AuthorizeAccountResult(res);
             Assertions.assertEquals("YOUR_ACCOUNT_ID", result.accountId);
             Assertions.assertEquals("4_0022623512fc8f80000000001_0186e431_d18d02_acct_tH7VW03boebOXayIc43-sxptpfA=",

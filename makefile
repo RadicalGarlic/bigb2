@@ -19,7 +19,8 @@ SRC = src/bbb2/Bbb2.java\
 TST = tst/unit_tests/ApiResultsTests.java\
       tst/unit_tests/ApiProxyTests.java\
       tst/unit_tests/StandardLibTests.java\
-      tst/mocks/TestHttpClientProxy.java
+      tst/mocks/MockHttpClientProxy.java\
+      tst/mocks/MockHttpResponse.java
 
 JSON_JAR = extern/javax.json/javax.json.jar
 
@@ -27,7 +28,7 @@ JUNIT_JAR = extern/junit-platform-console-standalone-1.7.0.jar
 
 all:
 	javac -d bin -classpath $(JSON_JAR) $(SRC)
-	javac -Xlint:unchecked -d tst/bin -classpath $(JUNIT_JAR):$(JSON_JAR) $(SRC) $(TST)
+	javac -d tst/bin -classpath $(JUNIT_JAR):$(JSON_JAR) $(SRC) $(TST)
 
 test: all
 	java -jar $(JUNIT_JAR) --classpath tst/bin:bin:$(JSON_JAR) --scan-class-path --disable-ansi-colors
