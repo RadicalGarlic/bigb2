@@ -2,10 +2,10 @@
 
 SRC = src/main.kt
 
-OUT = bin/bbb2.kexe
+OUT = bin/bbb2.jar
 
 $(OUT): $(SRC)
-	kotlinc -o $@ $<
+	kotlinc -include-runtime -d $@ $<
 
 clean:
 	rm -rf $(OUT)
