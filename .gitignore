@@ -1,5 +1,6 @@
 __pycache__
 .gradle
+bbb2.jar
 *.swp
 *.pyc
 *.class

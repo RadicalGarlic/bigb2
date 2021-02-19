@@ -2,7 +2,7 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 configurations {
@@ -16,30 +16,16 @@ dependencies {
 defaultTasks 'compile'
 
 task compile(type: Exec) {
-    def jars = new StringBuilder()
-    def sep = ''
-    configurations['all'].files.each{ f ->
-        jars.append(sep)
-        jars.append(f)
-        sep = ':'
-    }
-
-    def a = ['kotlinc', '-include-runtime', '-d', 'bin/bbb2.jar', '-cp', jars, 'src/main.kt']
-
-    
-    commandLine a
-
-/*
-    doLast {
-        configurations['all'].files.each{ file ->
-            println "$file"
+    doFirst {
+        def jars = new StringBuilder()
+        def sep = ''
+        configurations['all'].files.each{ f ->
+            jars.append(sep)
+            jars.append(f)
+            sep = ':'
         }
 
-        def out = new StringBuilder()
-        'kotlinc -version'.execute().waitForProcessOutput(out, out)
-        println "$out"
-
-        'kotlinc 
+        commandLine 'kotlinc', '-include-runtime', '-d', 'bin/bbb2.jar',
+                    '-cp', jars, 'src/main.kt', 'src/api.kt'
     }
-*/
 }
