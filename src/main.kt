@@ -1,14 +1,9 @@
 package bbb2
 
-fun lambdaFuckery(i: Int, f: () -> Unit)
-{
-    f()
-}
+import bbb2.api.authorizeAccount
 
 fun main(args: Array<String>)
 {
-    lambdaFuckery(1) { println("fuck") }
-
     if (args.isEmpty())
     {
         return
@@ -16,6 +11,7 @@ fun main(args: Array<String>)
 
     if ("--upload" == args[0])
     {
+        authorizeAccount("keyId", "key")
         println("Upload file!")
     }
 }

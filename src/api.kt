@@ -8,13 +8,18 @@ import io.ktor.client.request.post
 import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
 import java.util.Base64;
-import io.ktor.client.request.headers
+import io.ktor.client.request.header
+import io.ktor.client.request.get
+import kotlinx.coroutines.runBlocking
 
 fun authorizeAccount(keyId: String, appKey: String)
 {
+    var keyBytes = (keyId + ":" + appKey).toByteArray(Charsets.UTF_8)
+    var key = "Basic" + Base64.getEncoder().encodeToString(keyBytes)
 
     var req = HttpRequestBuilder()
-
+    req.header("Authorization", key)
+    
     req.url()
     {
         URLBuilder(protocol = URLProtocol.HTTPS,
@@ -22,15 +27,10 @@ fun authorizeAccount(keyId: String, appKey: String)
                    encodedPath = "/b2api/v2/b2_authorize_account")
     }
 
-    req.headers()
-    {
-        this.append("Authorization", "asdfadsf")
+    var client = HttpClient()
+    runBlocking {
+        println(client.get<String>(req))
     }
-
-    /*
-        var client = HttpClient()
-        client.post<String>()
-    */
 }
 
 fun listBuckets(auth: String, accountId: String, bucketName: String = "")

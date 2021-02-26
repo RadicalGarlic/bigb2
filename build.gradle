@@ -1,16 +1,13 @@
-plugins {
-}
-
 repositories {
     jcenter()
 }
 
 configurations {
-    create('all')
+    create('runtimeClasspath')
 }
 
 dependencies {
-    add('all', 'io.ktor:ktor-client:1.5.1')
+    add('runtimeClasspath', 'io.ktor:ktor-client:1.5.1')
 }
 
 defaultTasks 'compile'
@@ -19,7 +16,7 @@ task compile(type: Exec) {
     doFirst {
         def jars = new StringBuilder()
         def sep = ''
-        configurations['all'].files.each{ f ->
+        configurations['runtimeClasspath'].files.each{ f ->
             jars.append(sep)
             jars.append(f)
             sep = ':'
@@ -27,5 +24,19 @@ task compile(type: Exec) {
 
         commandLine 'kotlinc', '-include-runtime', '-d', 'bin/bbb2.jar',
                     '-cp', jars, 'src/main.kt', 'src/api.kt'
+    }
+}
+
+task run(type: Exec) {
+    doFirst {
+        def jars = new StringBuilder()
+        def sep = ''
+        configurations['runtimeClasspath'].files.each{ f ->
+            jars.append(sep)
+            jars.append(f)
+            sep = ':'
+        }
+
+        commandLine 'java', '-cp', jars, '-cp', 'bin/bbb2.jar', 'bbb2.MainKt', '--upload'
     }
 }
