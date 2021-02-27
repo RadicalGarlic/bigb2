@@ -3,11 +3,11 @@ repositories {
 }
 
 configurations {
-    create('runtimeClasspath')
+    create('ktor')
 }
 
 dependencies {
-    add('runtimeClasspath', 'io.ktor:ktor-client:1.5.1')
+    add('ktor', 'io.ktor:ktor-client:1.5.1')
 }
 
 defaultTasks 'compile'
@@ -16,7 +16,7 @@ task compile(type: Exec) {
     doFirst {
         def jars = new StringBuilder()
         def sep = ''
-        configurations['runtimeClasspath'].files.each{ f ->
+        configurations['ktor'].files.each{ f ->
             jars.append(sep)
             jars.append(f)
             sep = ':'
@@ -27,16 +27,13 @@ task compile(type: Exec) {
     }
 }
 
-task run(type: Exec) {
+task downloadDeps() {
     doFirst {
         def jars = new StringBuilder()
-        def sep = ''
-        configurations['runtimeClasspath'].files.each{ f ->
-            jars.append(sep)
-            jars.append(f)
-            sep = ':'
+        configurations['ktor'].files.each{ f ->
+            exec {
+                commandLine 'cp', f, 'extern/ktor'
+            }
         }
-
-        commandLine 'java', '-cp', jars, '-cp', 'bin/bbb2.jar', 'bbb2.MainKt', '--upload'
     }
 }
