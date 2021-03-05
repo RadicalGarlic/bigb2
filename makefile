@@ -28,6 +28,7 @@ JUNIT_JAR = extern/junit-platform-console-standalone-1.7.0.jar
 
 all:
 	javac -d bin -classpath $(JSON_JAR) $(SRC)
+	jar cef bbb2.Bbb2 bin/bbb2.jar -C bin bbb2
 	javac -d tst/bin -classpath $(JUNIT_JAR):$(JSON_JAR) $(SRC) $(TST)
 
 test: all
