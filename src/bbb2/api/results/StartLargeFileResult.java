@@ -6,7 +6,7 @@ import bbb2.api.ApiErrorException;
 import bbb2.api.ApiResponseParseException;
 import bbb2.util.http.HttpStatusCodes;
 import bbb2.util.http.Stringer;
-import bbb2.util.json.JsonObjectProxy;
+import bbb2.util.json.JsonValueProxy;
 import bbb2.util.json.JsonParseException;
 
 public class StartLargeFileResult
@@ -16,10 +16,10 @@ public class StartLargeFileResult
     {
         try
         {
-            JsonObjectProxy json = new JsonObjectProxy(res.body());
+            JsonValueProxy json = new JsonValueProxy(res.body());
             if (res.statusCode() == HttpStatusCodes.OK.getInt())
             {
-                fileId = json.getString("fileId");
+                fileId = json.get("fileId").asString();
             }
             else
             {

@@ -8,8 +8,8 @@ import bbb2.api.ApiErrorException;
 import bbb2.api.ApiResponseParseException;
 import bbb2.util.http.HttpStatusCodes;
 import bbb2.util.http.Stringer;
-import bbb2.util.json.JsonObjectProxy;
 import bbb2.util.json.JsonParseException;
+import bbb2.util.json.JsonValueProxy;
 
 public class AuthorizeAccountResult
 {
@@ -20,13 +20,13 @@ public class AuthorizeAccountResult
         {
             if (res.statusCode() == HttpStatusCodes.OK.getInt())
             {
-                JsonObjectProxy json = new JsonObjectProxy(res.body());
-                accountId = json.getString("accountId");
-                authToken = json.getString("authorizationToken");
-                apiUrl = new URL(json.getString("apiUrl"));
-                downloadUrl = new URL(json.getString("downloadUrl"));
-                minPartSizeBytes = json.getInt("absoluteMinimumPartSize");
-                recPartSizeBytes = json.getInt("recommendedPartSize");
+                JsonValueProxy json = new JsonValueProxy(res.body());
+                accountId = json.get("accountId").asString();
+                authToken = json.get("authorizationToken").asString();
+                apiUrl = new URL(json.get("apiUrl").asString());
+                downloadUrl = new URL(json.get("downloadUrl").asString());
+                minPartSizeBytes = json.get("absoluteMinimumPartSize").asInt();
+                recPartSizeBytes = json.get("recommendedPartSize").asInt();
             }
             else
             {

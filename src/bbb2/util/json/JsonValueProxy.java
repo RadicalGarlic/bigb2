@@ -5,10 +5,10 @@ import java.io.StringReader;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import bbb2.util.json.JsonObjectProxy;
 import bbb2.util.json.JsonParseException;
 
 public class JsonValueProxy
@@ -36,6 +36,19 @@ public class JsonValueProxy
         }
 
         internal = in;
+    }
+
+    public int asInt() throws JsonParseException
+    {
+        try
+        {
+            JsonNumber num = (JsonNumber)internal;
+            return num.intValue();
+        }
+        catch (ClassCastException e)
+        {
+            throw new JsonParseException("Failed number cast.", e);
+        }
     }
 
     public String asString() throws JsonParseException
