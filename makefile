@@ -7,6 +7,7 @@ SRC = src/bbb2/Bbb2.java\
       src/bbb2/api/ApiErrorException.java\
       src/bbb2/api/ApiResponseParseException.java\
       src/bbb2/api/results/AuthorizeAccountResult.java\
+      src/bbb2/api/results/ListBucketsResult.java\
       src/bbb2/api/results/StartLargeFileResult.java\
       src/bbb2/util/http/HttpClientProxy.java\
       src/bbb2/util/http/HttpClientProxyBuilder.java\
