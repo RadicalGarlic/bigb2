@@ -14,7 +14,8 @@ SRC = src/bbb2/Bbb2.java\
       src/bbb2/util/http/RealClient.java\
       src/bbb2/util/http/Stringer.java\
       src/bbb2/util/json/JsonObjectProxy.java\
-      src/bbb2/util/json/JsonParseException.java
+      src/bbb2/util/json/JsonParseException.java\
+      src/bbb2/util/json/JsonValueProxy.java
 
 TST = tst/unit_tests/ApiResultsTests.java\
       tst/unit_tests/ApiProxyTests.java\
