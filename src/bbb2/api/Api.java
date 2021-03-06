@@ -15,9 +15,13 @@ import javax.json.Json;
 
 import bbb2.ExitCode;
 import bbb2.api.results.AuthorizeAccountResult;
+import bbb2.api.results.ListBucketsResult;
 import bbb2.api.results.StartLargeFileResult;
 import bbb2.util.http.HttpClientProxy;
 import bbb2.util.http.HttpClientProxyBuilder;
+import bbb2.util.json.JsonParseException;
+
+import javax.json.JsonObjectBuilder;
 
 public class Api
 {
@@ -36,7 +40,7 @@ public class Api
             HttpRequest.Builder reqBuilder = HttpRequest.newBuilder();
             HttpRequest req = reqBuilder.uri(getAuthUri())
                                         .GET()
-                                        .header("Authorization", auth)
+                                        .header(AUTHORIZATION, auth)
                                         .build();
 
             HttpClientProxy client = HttpClientProxyBuilder.build();
@@ -47,22 +51,47 @@ public class Api
         catch (UnsupportedCharsetException e)
         {
             e.printStackTrace();
-            System.exit(ExitCode.PROGRAM_ERROR);
+            System.exit(ExitCode.FAILURE);
             return null;
         }
         catch (IllegalCharsetNameException e)
         {
             e.printStackTrace();
-            System.exit(ExitCode.PROGRAM_ERROR);
+            System.exit(ExitCode.FAILURE);
             return null;
         }
         catch (IllegalArgumentException e)
         {
             // ...due to bad charset name.
             e.printStackTrace();
-            System.exit(ExitCode.PROGRAM_ERROR);
+            System.exit(ExitCode.FAILURE);
             return null;
         }
+    }
+
+    public static ListBucketsResult listBuckets(AuthorizeAccountResult auth,
+                                                String bucketName)
+    throws ApiErrorException, InterruptedException, IOException,
+           JsonParseException
+    {
+        JsonObjectBuilder bodyJson = Json.createObjectBuilder();
+        bodyJson.add("accountId", auth.accountId);
+        if ((null != bucketName) && !bucketName.isEmpty())
+        {
+            bodyJson.add("bucketName", bucketName);
+        }
+
+        HttpRequest.BodyPublisher body
+        = HttpRequest.BodyPublishers.ofString(bodyJson.build().toString());
+
+        HttpRequest.Builder reqBuilder = HttpRequest.newBuilder();
+        HttpRequest req = reqBuilder.uri(auth.apiUrl)
+                                    .POST(body)
+                                    .header(AUTHORIZATION, auth.authToken)
+                                    .build();
+
+        HttpClientProxy client = HttpClientProxyBuilder.build();
+        return new ListBucketsResult(client.send(req));
     }
 
     public static
@@ -82,13 +111,15 @@ public class Api
         HttpRequest req = reqBuilder.uri(getAuthUri())
                                     .POST(HttpRequest.BodyPublishers
                                                      .ofString(reqBody))
-                                    .header("Authorization", auth.authToken)
+                                    .header(AUTHORIZATION, auth.authToken)
                                     .build();
 
         HttpClientProxy client = HttpClientProxyBuilder.build();
 
         return new StartLargeFileResult(client.send(req));
     }
+
+    private static final String AUTHORIZATION = "Authorization";
 
     private static URI getAuthUri()
     {
@@ -102,7 +133,7 @@ public class Api
         catch (URISyntaxException e)
         {
             e.printStackTrace();
-            System.exit(ExitCode.PROGRAM_ERROR);
+            System.exit(ExitCode.FAILURE);
             return null;
         }
     }

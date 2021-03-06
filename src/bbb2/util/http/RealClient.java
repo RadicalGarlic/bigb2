@@ -26,13 +26,13 @@ public class RealClient implements HttpClientProxy
         catch (IllegalArgumentException e)
         {
             e.printStackTrace();
-            System.exit(ExitCode.PROGRAM_ERROR);
+            System.exit(ExitCode.FAILURE);
             return null;
         }
         catch (SecurityException e)
         {
             e.printStackTrace();
-            System.exit(ExitCode.PROGRAM_ERROR);
+            System.exit(ExitCode.FAILURE);
             return null;
         }
     }

@@ -1,8 +1,8 @@
 package bbb2.api.results;
 
 import java.net.http.HttpResponse;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import bbb2.api.ApiErrorException;
 import bbb2.api.ApiResponseParseException;
@@ -23,8 +23,8 @@ public class AuthorizeAccountResult
                 JsonValueProxy json = new JsonValueProxy(res.body());
                 accountId = json.get("accountId").asString();
                 authToken = json.get("authorizationToken").asString();
-                apiUrl = new URL(json.get("apiUrl").asString());
-                downloadUrl = new URL(json.get("downloadUrl").asString());
+                apiUrl = new URI(json.get("apiUrl").asString());
+                downloadUrl = new URI(json.get("downloadUrl").asString());
                 minPartSizeBytes = json.get("absoluteMinimumPartSize").asInt();
                 recPartSizeBytes = json.get("recommendedPartSize").asInt();
             }
@@ -37,7 +37,7 @@ public class AuthorizeAccountResult
         {
             throw new ApiResponseParseException(Stringer.toString(res), e);
         }
-        catch (MalformedURLException e)
+        catch (URISyntaxException e)
         {
             throw new ApiResponseParseException(Stringer.toString(res), e);
         }
@@ -45,8 +45,8 @@ public class AuthorizeAccountResult
 
     public String accountId;
     public String authToken;
-    public URL apiUrl;
-    public URL downloadUrl;
+    public URI apiUrl;
+    public URI downloadUrl;
     public int minPartSizeBytes;
     public int recPartSizeBytes;
 }

@@ -1,4 +1,4 @@
-package bbb2;
+package bbb2.api.results;
 
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
