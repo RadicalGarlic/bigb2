@@ -1,6 +1,9 @@
 package bbb2.util.json;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.StringReader;
+import java.io.FileNotFoundException;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -13,6 +16,21 @@ import bbb2.util.json.JsonParseException;
 
 public class JsonValueProxy
 {
+    public JsonValueProxy(File file) throws FileNotFoundException, 
+                                            JsonParseException
+    {
+        try
+        {
+            internal = Json.createReader(new FileReader(file)).readObject();
+        }
+        catch (JsonException e)
+        {
+            StringBuilder s = new StringBuilder();
+            s.append("Failed to parse JSON file.");
+            throw new JsonParseException(s.toString(), e);
+        }
+    }
+
     public JsonValueProxy(String json) throws JsonParseException
     {
         try
@@ -55,7 +73,7 @@ public class JsonValueProxy
     {
         if (JsonValue.ValueType.STRING == internal.getValueType())
         {
-            return internal.toString();
+            return new String(internal.toString());
         }
         else
         {
