@@ -2,22 +2,43 @@ package bbb2;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
+import bbb2.api.ApiErrorException;
+import bbb2.api.ApiProxy;
+import bbb2.api.ApiResponseParseException;
 import bbb2.api.results.ListBucketsResult;
+import bbb2.api.results.AuthorizeAccountResult;
 import bbb2.util.json.JsonParseException;
 import bbb2.util.json.JsonValueProxy;
 
 public class Client
 {
-    public Client()
+    public final String DEFAULT_APPKEY_FILE_PATH = "~/.bbb2.json";
+
+    public Client(String appKeyFilePath)
+    throws FileNotFoundException, JsonParseException
     {
+        appKey = readAppKey(appKeyFilePath);
+    }
+
+    public void authorize()
+    throws ApiErrorException, ApiResponseParseException, FileNotFoundException,
+           InterruptedException, IOException, JsonParseException
+    {
+        if (null == appKey)
+        {
+            appKey = readAppKey(DEFAULT_APPKEY_FILE_PATH);
+        }
+
+        auth = ApiProxy.authorizeAccount(appKey.getId(), appKey.getKey());
     }
 
     /*
-    public static ListBucketsResult listBuckets(String bucketName)
+    public ListBucketsResult listBuckets(String bucketName)
     {
-        return Api.listBuckets(bucketName);
+        return ApiProxy.listBuckets(bucketName);
     }
 
     public static void upload(String dstBucketName, String dstFilePath,
@@ -43,13 +64,12 @@ public class Client
         private String key;
     }
 
-    private void readAppKey(String filePath) throws FileNotFoundException,
-                                                    JsonParseException
+    private AppKey readAppKey(String filePath) throws FileNotFoundException,
+                                                      JsonParseException
     {
-        appKey = new AppKey(filePath);
+        return new AppKey(filePath);
     }
 
-    private final String defaultAppKeyFilePath = "~/.bbb2.json";
-
-    private AppKey appKey;
+    private AppKey appKey = null;
+    private AuthorizeAccountResult auth = null;
 }

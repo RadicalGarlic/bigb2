@@ -30,43 +30,21 @@ public class Api
     throws ApiErrorException, ApiResponseParseException, InterruptedException,
            IOException
     {
-        try
-        {
-            String key = keyId + ":" + appKey;
-            byte[] keyBytes = key.getBytes(Charset.forName("US-ASCII"));
-            String keyBase64 = Base64.getEncoder().encodeToString(keyBytes);
-            String auth = "Basic" + keyBase64;
+        String key = keyId + ":" + appKey;
+        byte[] keyBytes = key.getBytes(Charset.forName("US-ASCII"));
+        String keyBase64 = Base64.getEncoder().encodeToString(keyBytes);
+        String auth = "Basic" + keyBase64;
 
-            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder();
-            HttpRequest req = reqBuilder.uri(getAuthUri())
-                                        .GET()
-                                        .header(AUTHORIZATION, auth)
-                                        .build();
+        HttpRequest.Builder reqBuilder = HttpRequest.newBuilder();
+        HttpRequest req = reqBuilder.uri(getAuthUri())
+                                    .GET()
+                                    .header(AUTHORIZATION, auth)
+                                    .build();
 
-            HttpClientProxy client = HttpClientProxyBuilder.build();
-            HttpResponse<String> res = client.send(req);
+        HttpClientProxy client = HttpClientProxyBuilder.build();
+        HttpResponse<String> res = client.send(req);
 
-            return new AuthorizeAccountResult(res);
-        }
-        catch (UnsupportedCharsetException e)
-        {
-            e.printStackTrace();
-            System.exit(ExitCode.FAILURE);
-            return null;
-        }
-        catch (IllegalCharsetNameException e)
-        {
-            e.printStackTrace();
-            System.exit(ExitCode.FAILURE);
-            return null;
-        }
-        catch (IllegalArgumentException e)
-        {
-            // ...due to bad charset name.
-            e.printStackTrace();
-            System.exit(ExitCode.FAILURE);
-            return null;
-        }
+        return new AuthorizeAccountResult(res);
     }
 
     public static ListBucketsResult listBuckets(AuthorizeAccountResult auth,
