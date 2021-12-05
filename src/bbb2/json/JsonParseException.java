@@ -1,4 +1,4 @@
-package bbb2.util.json;
+package bbb2.json;
 
 public class JsonParseException extends Exception
 {

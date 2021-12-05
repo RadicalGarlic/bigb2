@@ -4,7 +4,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class Bbb2
+public class Main
 {
     public static void main(String[] args)
     {

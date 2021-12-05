@@ -1,8 +1,8 @@
-package bbb2.util.http;
+package bbb2;
 
 import java.net.http.HttpResponse;
 
-public class Stringer
+public class Util
 {
     public static String toString(HttpResponse<String> in)
     {

@@ -1,4 +1,4 @@
-package bbb2.util.json;
+package bbb2.json;
 
 import java.io.File;
 import java.io.FileReader;
@@ -12,7 +12,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import bbb2.util.json.JsonParseException;
+import bbb2.json.JsonParseException;
 
 public class JsonValueProxy
 {

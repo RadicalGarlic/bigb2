@@ -1,4 +1,4 @@
-package bbb2.util.http;
+package bbb2.http;
 
 public enum HttpStatusCodes
 {
