@@ -12,7 +12,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import bbb2.json.JsonParseException;
+import bbb2.exception.JsonParseException;
 
 public class JsonValueProxy
 {
@@ -21,7 +21,8 @@ public class JsonValueProxy
     {
         try
         {
-            internal = Json.createReader(new FileReader(file)).readObject();
+            this.internal
+                = Json.createReader(new FileReader(file)).readObject();
         }
         catch (JsonException e)
         {
@@ -35,7 +36,8 @@ public class JsonValueProxy
     {
         try
         {
-            internal = Json.createReader(new StringReader(json)).readObject();
+            this.internal
+                = Json.createReader(new StringReader(json)).readObject();
         }
         catch (JsonException e)
         {
@@ -53,14 +55,14 @@ public class JsonValueProxy
             throw new JsonParseException("Input JsonValue was null.");
         }
 
-        internal = in;
+        this.internal = in;
     }
 
     public int asInt() throws JsonParseException
     {
         try
         {
-            JsonNumber num = (JsonNumber)internal;
+            JsonNumber num = (JsonNumber)(this.internal);
             return num.intValue();
         }
         catch (ClassCastException e)
@@ -71,9 +73,9 @@ public class JsonValueProxy
 
     public String asString() throws JsonParseException
     {
-        if (JsonValue.ValueType.STRING == internal.getValueType())
+        if (JsonValue.ValueType.STRING == this.internal.getValueType())
         {
-            return new String(internal.toString());
+            return this.internal.toString();
         }
         else
         {
@@ -85,11 +87,11 @@ public class JsonValueProxy
     {
         try
         {
-            return new JsonValueProxy((JsonObject)internal);
+            return new JsonValueProxy((JsonObject)(this.internal));
         }
         catch (ClassCastException e)
         {
-            throw new JsonParseException("Failed String cast.", e);
+            throw new JsonParseException("Failed JsonObject cast.", e);
         }
     }
 

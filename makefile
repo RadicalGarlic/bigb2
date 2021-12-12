@@ -3,13 +3,17 @@
 SRC = src/bbb2/Main.java\
       src/bbb2/ExitCode.java\
       src/bbb2/Util.java\
-      src/bbb2/backblazeb2/BackblazeB2Proxy.java\
-      src/bbb2/backblazeb2/result/AuthorizeAccountResult.java\
+      src/bbb2/backblazeb2/api/BackblazeB2ApiProxy.java\
+      src/bbb2/backblazeb2/api/result/AuthorizeAccountResult.java\
+      src/bbb2/backblazeb2/api/result/ListBucketsResult.java\
+      src/bbb2/backblazeb2/client/AppKey.java\
+      src/bbb2/backblazeb2/client/BackblazeB2Client.java\
       src/bbb2/exception/Bbb2Exception.java\
+      src/bbb2/exception/JsonParseException.java\
       src/bbb2/http/HttpClientProxy.java\
       src/bbb2/http/HttpStatusCodes.java\
-      src/bbb2/json/JsonParseException.java\
-      src/bbb2/json/JsonValueProxy.java
+      src/bbb2/json/JsonValueProxy.java\
+      src/bbb2/json/JsonProxy.java
 
 TST = tst/unit_tests/ApiResultsTests.java\
       tst/unit_tests/ApiProxyTests.java\
@@ -17,7 +21,7 @@ TST = tst/unit_tests/ApiResultsTests.java\
       tst/mocks/MockHttpClientProxy.java\
       tst/mocks/MockHttpResponse.java
 
-JSON_JAR = lib/javax.json/javax.json.jar
+JSON_JAR = lib/javax.json/javax.json.jar:lib/gson/gson-2.8.9.jar
 
 JUNIT_JAR = lib/junit-platform-console-standalone-1.7.0.jar
 
