@@ -12,7 +12,6 @@ SRC = src/bbb2/Main.java\
       src/bbb2/exception/JsonParseException.java\
       src/bbb2/http/HttpClientProxy.java\
       src/bbb2/http/HttpStatusCodes.java\
-      src/bbb2/json/JsonValueProxy.java\
       src/bbb2/json/JsonProxy.java
 
 TST = tst/unit_tests/ApiResultsTests.java\
@@ -27,7 +26,7 @@ JUNIT_JAR = lib/junit-platform-console-standalone-1.7.0.jar
 
 all:
 	javac -d bin -classpath $(JSON_JAR) $(SRC)
-	jar cef bbb2.Bbb2 bin/bbb2.jar -C bin bbb2
+	jar cef bbb2.Main bin/bbb2.jar -C bin bbb2
 
 #test: all
 #javac -d tst/bin -classpath $(JUNIT_JAR):$(JSON_JAR) $(SRC) $(TST)

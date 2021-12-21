@@ -8,18 +8,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import bbb2.backblazeb2.api.result.AuthorizeAccountResult;
+import bbb2.backblazeb2.api.result.ListBucketsResult;
+import bbb2.backblazeb2.client.AppKey;
 import bbb2.exception.Bbb2Exception;
 import bbb2.http.HttpClientProxy;
+import bbb2.json.JsonProxy;
 
 public class BackblazeB2ApiProxy
 {
-    public static AuthorizeAccountResult authorizeAccount(String appKeyId,
-                                                          String appKey)
+    public static AuthorizeAccountResult authorizeAccount(AppKey appKey)
     throws Bbb2Exception
     {
         try
         {
-            String key = appKeyId + ":" + appKey;
+            String key = appKey.keyId + ":" + appKey.appKey;
             byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
             String keyBase64 = Base64.getEncoder().encodeToString(keyBytes);
             String auth = "Basic" + keyBase64;
@@ -28,11 +30,11 @@ public class BackblazeB2ApiProxy
             HttpRequest req
                 = reqBuilder.uri(BackblazeB2ApiProxy.getAuthUri())
                             .GET()
-                            .header(BackblazeB2ApiProxy.AUTHORIZATION,
-                                    authToken)
+                            .header(BackblazeB2ApiProxy.AUTHORIZATION, auth)
                             .build();
             HttpResponse<String> reply = HttpClientProxy.send(req);
-            return new AuthorizeAccountResult(reply);
+            return JsonProxy.fromJson(reply.body(),
+                                      AuthorizeAccountResult.class);
         }
         catch (URISyntaxException e)
         {
@@ -42,6 +44,7 @@ public class BackblazeB2ApiProxy
 
     public static ListBucketsResult listBuckets(AuthorizeAccountResult auth)
     {
+        /*
         JsonObjectBuilder bodyJson = Json.createObjectBuilder();
         bodyJson.add("accountId", auth.accountId);
         HttpRequest.BodyPublisher body
@@ -55,6 +58,8 @@ public class BackblazeB2ApiProxy
                                     .build();
         HttpResponse<String> reply = HttpClientProxy.send(req);
         return new ListBucketsResult(reply);
+        */
+        return null;
     }
 
     private static URI getAuthUri() throws URISyntaxException
@@ -64,5 +69,5 @@ public class BackblazeB2ApiProxy
         return new URI(uriString);
     }
 
-    private static final AUTHORIZATION = "Authorization";
+    private static final String AUTHORIZATION = "Authorization";
 }

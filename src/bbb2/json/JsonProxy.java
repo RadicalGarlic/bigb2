@@ -1,23 +1,41 @@
 package bbb2.json;
 
-import com.google.json.Gson;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+
+import com.google.gson.Gson;
+
+import bbb2.exception.Bbb2Exception;
 
 public class JsonProxy
 {
-    public static class Example
+    public static <T> T fromJson(String json, Class<T> type)
     {
-        public Example(String s, int i)
-        {
-            this.s = s;
-            this.i = i;
-        }
-
-        public String s;
-        public int i;
+        return new Gson().fromJson(json, type);
     }
 
-    public static Example toExample(String json)
+    public static <T> T fromJson(Path filePath, Class<T> type)
+    throws Bbb2Exception
     {
-        return new Gson(json, Example.class).
+        try
+        {
+            return new Gson().fromJson(
+                new InputStreamReader(new FileInputStream(filePath.toFile()),
+                                      StandardCharsets.UTF_8),
+                type
+            );
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new Bbb2Exception(e);
+        }
+    }
+
+    public static String toJson(Object o)
+    {
+        return new Gson().toJson(o);
     }
 }

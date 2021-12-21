@@ -6,6 +6,8 @@ import java.net.URISyntaxException;
 
 import bbb2.backblazeb2.client.BackblazeB2Client;
 
+import bbb2.json.JsonProxy;
+
 public class Main
 {
     public static void main(String[] args)
@@ -24,8 +26,8 @@ public class Main
             }
             else if ("--list-buckets".equals(args[0]))
             {
-                System.out.println("list buckets");
                 BackblazeB2Client client = new BackblazeB2Client();
+                client.authorize();
             }
             else
             {
