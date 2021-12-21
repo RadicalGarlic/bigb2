@@ -5,8 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import bbb2.backblazeb2.client.BackblazeB2Client;
-
-import bbb2.json.JsonProxy;
+import bbb2.operation.OperationFactory;
 
 public class Main
 {
@@ -20,20 +19,13 @@ public class Main
                 System.exit(ExitCode.FAILURE);
             }
 
-            if ("--upload".equals(args[0]))
+            int exitStatus = OperationFactory.getOperation(args).execute();
+            if (0 != exitStatus)
             {
-                System.out.println("upload");
+                System.exit(exitStatus);
             }
-            else if ("--list-buckets".equals(args[0]))
-            {
-                BackblazeB2Client client = new BackblazeB2Client();
-                client.authorize();
-            }
-            else
-            {
-                System.err.println("Bad args.");
-                System.exit(ExitCode.FAILURE);
-            }
+
+            // Let main() end "naturally" if operation finishes with good status.
         }
         catch (Exception e)
         {

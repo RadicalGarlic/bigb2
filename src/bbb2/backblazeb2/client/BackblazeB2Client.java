@@ -14,37 +14,31 @@ import bbb2.json.JsonProxy;
 
 public class BackblazeB2Client
 {
-    public final static Path DEFAULT_APPKEY_FILE_PATH
-        = Paths.get("/home/user/.bbb2.json");
-
     public BackblazeB2Client() throws Bbb2Exception
     {
-        this(BackblazeB2Client.DEFAULT_APPKEY_FILE_PATH);
+        this(BackblazeB2Client.getDefaultAppKeyFilePath());
     }
 
     public BackblazeB2Client(Path appKeyFilePath) throws Bbb2Exception
     {
         this.appKey = JsonProxy.fromJson(appKeyFilePath, AppKey.class);
+        this.auth = BackblazeB2ApiProxy.authorizeAccount(this.appKey);
     }
 
     public void authorize() throws Bbb2Exception
     {
         this.auth = BackblazeB2ApiProxy.authorizeAccount(this.appKey);
-        System.out.println(JsonProxy.toJson(this.auth));
     }
 
     public ListBucketsResult listBuckets(String bucketName)
     {
-        //return ApiProxy.listBuckets(bucketName);
         return null;
     }
 
-    /*
-        public static void upload(String dstBucketName, String dstFilePath,
-                                  String srcFilePath)
-        {
-        }
-    */
+    private static Path getDefaultAppKeyFilePath()
+    {
+        return Paths.get(System.getProperty("user.home")).resolve(".bbb2.json");
+    }
 
     private AppKey appKey = null;
     private AuthorizeAccountResult auth = null;
