@@ -5,8 +5,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import bbb2.backblazeb2.api.result.AuthorizeAccountResult;
-import bbb2.backblazeb2.api.result.ListBucketsResult;
+import bbb2.backblazeb2.api.response.AuthorizeAccountResponse;
+import bbb2.backblazeb2.api.response.ListBucketsResponse;
 import bbb2.backblazeb2.api.BackblazeB2ApiProxy;
 import bbb2.exception.Bbb2Exception;
 import bbb2.exception.JsonParseException;
@@ -14,15 +14,24 @@ import bbb2.json.JsonProxy;
 
 public class BackblazeB2Client
 {
-    public BackblazeB2Client() throws Bbb2Exception
+    public static Path getDefaultAppKeyFilePath()
     {
-        this(BackblazeB2Client.getDefaultAppKeyFilePath());
+        return Paths.get(System.getProperty("user.home")).resolve(".bbb2.json");
     }
 
-    public BackblazeB2Client(Path appKeyFilePath) throws Bbb2Exception
+    public BackblazeB2Client() throws Bbb2Exception
+    {
+        this(BackblazeB2Client.getDefaultAppKeyFilePath(), true);
+    }
+
+    public BackblazeB2Client(Path appKeyFilePath, boolean authorize)
+    throws Bbb2Exception
     {
         this.appKey = JsonProxy.fromJson(appKeyFilePath, AppKey.class);
-        this.auth = BackblazeB2ApiProxy.authorizeAccount(this.appKey);
+        if (authorize)
+        {
+            this.authorize();
+        }
     }
 
     public void authorize() throws Bbb2Exception
@@ -30,16 +39,11 @@ public class BackblazeB2Client
         this.auth = BackblazeB2ApiProxy.authorizeAccount(this.appKey);
     }
 
-    public ListBucketsResult listBuckets(String bucketName)
+    public void listBuckets() throws Bbb2Exception
     {
-        return null;
-    }
-
-    private static Path getDefaultAppKeyFilePath()
-    {
-        return Paths.get(System.getProperty("user.home")).resolve(".bbb2.json");
+        System.out.println(JsonProxy.toJson(BackblazeB2ApiProxy.listBuckets(this.auth)));
     }
 
     private AppKey appKey = null;
-    private AuthorizeAccountResult auth = null;
+    private AuthorizeAccountResponse auth = null;
 }

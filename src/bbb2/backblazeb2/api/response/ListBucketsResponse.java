@@ -1,8 +1,8 @@
-package bbb2.backblazeb2.api.result;
+package bbb2.backblazeb2.api.response;
 
 import java.util.List;
 
-public class ListBucketsResult
+public class ListBucketsResponse
 {
     public static class Bucket
     {
@@ -10,5 +10,5 @@ public class ListBucketsResult
         public String bucketId;
     }
 
-    public List<ListBucketsResult.Bucket> buckets;
+    public List<ListBucketsResponse.Bucket> buckets;
 }

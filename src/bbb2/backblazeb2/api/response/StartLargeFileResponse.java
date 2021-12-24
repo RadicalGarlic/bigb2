@@ -1,4 +1,4 @@
-package bbb2.api.results;
+package bbb2.backblazeb2.api.response;
 
 import java.net.http.HttpResponse;
 

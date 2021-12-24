@@ -25,7 +25,7 @@ public class Main
                 System.exit(exitStatus);
             }
 
-            // Let main() end "naturally" if operation finishes with good status.
+            // Let main() end naturally if operation finishes with good status.
         }
         catch (Exception e)
         {

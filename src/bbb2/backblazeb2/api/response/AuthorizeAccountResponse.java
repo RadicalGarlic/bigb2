@@ -1,4 +1,4 @@
-package bbb2.backblazeb2.api.result;
+package bbb2.backblazeb2.api.response;
 
 import java.net.http.HttpResponse;
 import java.net.URI;
@@ -10,7 +10,7 @@ import bbb2.exception.JsonParseException;
 import bbb2.http.HttpStatusCodes;
 import bbb2.json.JsonProxy;
 
-public class AuthorizeAccountResult
+public class AuthorizeAccountResponse
 {
     public String accountId;
     public String authorizationToken;
