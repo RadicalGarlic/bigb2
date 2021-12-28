@@ -6,8 +6,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import bbb2.backblazeb2.api.response.AuthorizeAccountResponse;
-import bbb2.backblazeb2.api.response.ListBucketsResponse;
 import bbb2.backblazeb2.api.BackblazeB2ApiProxy;
+import bbb2.backblazeb2.client.response.ListBucketsResponse;
 import bbb2.exception.Bbb2Exception;
 import bbb2.exception.JsonParseException;
 import bbb2.json.JsonProxy;
@@ -39,9 +39,11 @@ public class BackblazeB2Client
         this.auth = BackblazeB2ApiProxy.authorizeAccount(this.appKey);
     }
 
-    public void listBuckets() throws Bbb2Exception
+    public ListBucketsResponse listBuckets() throws Bbb2Exception
     {
-        System.out.println(JsonProxy.toJson(BackblazeB2ApiProxy.listBuckets(this.auth)));
+        return new ListBucketsResponse(
+            BackblazeB2ApiProxy.listBuckets(this.auth)
+        );
     }
 
     private AppKey appKey = null;

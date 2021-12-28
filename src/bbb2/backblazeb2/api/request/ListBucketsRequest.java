@@ -16,8 +16,7 @@ public class ListBucketsRequest extends Request
     @Override
     public HttpRequest toHttpRequest()
     {
-        System.out.println(JsonProxy.toJson(this.payload));
-        HttpRequest ret = HttpRequest.newBuilder()
+        return HttpRequest.newBuilder()
                           .uri(auth.apiUrl.resolve("/b2api/v2/b2_list_buckets"))
                           .POST(
                               Request.toHttpRequestBodyPublisher(this.payload)
@@ -25,8 +24,6 @@ public class ListBucketsRequest extends Request
                           .header(Request.AUTHORIZATION,
                                   this.auth.authorizationToken)
                           .build();
-        System.out.println(ret);
-        return ret;
     }
 
     private static class Payload

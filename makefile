@@ -11,6 +11,7 @@ SRC = src/bbb2/Main.java\
       src/bbb2/backblazeb2/api/response/ListBucketsResponse.java\
       src/bbb2/backblazeb2/client/AppKey.java\
       src/bbb2/backblazeb2/client/BackblazeB2Client.java\
+      src/bbb2/backblazeb2/client/response/ListBucketsResponse.java\
       src/bbb2/exception/Bbb2Exception.java\
       src/bbb2/exception/JsonParseException.java\
       src/bbb2/http/HttpClientProxy.java\

@@ -12,9 +12,7 @@ public class HttpClientProxy
 {
     public static HttpResponse<String> send(Request req) throws Bbb2Exception
     {
-        HttpResponse<String> ret = HttpClientProxy.send(req.toHttpRequest());
-        System.out.println(ret.body());
-        return ret;
+        return HttpClientProxy.send(req.toHttpRequest());
     }
 
     private static HttpResponse<String> send(HttpRequest req)

@@ -1,6 +1,7 @@
 package bbb2.operation;
 
 import bbb2.backblazeb2.client.BackblazeB2Client;
+import bbb2.backblazeb2.client.response.ListBucketsResponse;
 import bbb2.exception.Bbb2Exception;
 
 public class ListBucketsOperation implements Operation
@@ -13,7 +14,12 @@ public class ListBucketsOperation implements Operation
     public int execute() throws Bbb2Exception
     {
         BackblazeB2Client client = new BackblazeB2Client();
-        client.listBuckets();
-        return 1;
+        for (ListBucketsResponse.Bucket bucket : client.listBuckets().buckets)
+        {
+            System.out.println("BucketName=\"" + bucket.name + "\""
+                               + ", BucketID=\"" + bucket.id + "\"");
+        }
+
+        return 0;
     }
 }
