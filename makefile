@@ -17,6 +17,7 @@ SRC = src/bbb2/Main.java\
       src/bbb2/http/HttpClientProxy.java\
       src/bbb2/http/HttpStatusCodes.java\
       src/bbb2/json/JsonProxy.java\
+      src/bbb2/operation/DownloadOperation.java\
       src/bbb2/operation/ListBucketsOperation.java\
       src/bbb2/operation/Operation.java\
       src/bbb2/operation/OperationFactory.java

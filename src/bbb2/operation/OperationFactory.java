@@ -18,6 +18,12 @@ public class OperationFactory
                 Arrays.copyOfRange(args, 1, args.length)
             );
         }
+        else if ("--download".equals(args[0]))
+        {
+            return new DownloadOperation(
+                Arrays.copyOfRange(args, 1, args.length)
+            );
+        }
         else
         {
             throw new Bbb2Exception("Bad args.");

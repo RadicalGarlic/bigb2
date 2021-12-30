@@ -4,11 +4,10 @@ import bbb2.backblazeb2.client.BackblazeB2Client;
 import bbb2.backblazeb2.client.response.ListBucketsResponse;
 import bbb2.exception.Bbb2Exception;
 
-public class ListBucketsOperation implements Operation
+public class ListBucketsOperation extends Operation
 {
     public ListBucketsOperation(String[] args)
-    {
-    }
+    {}
 
     @Override
     public int execute() throws Bbb2Exception
