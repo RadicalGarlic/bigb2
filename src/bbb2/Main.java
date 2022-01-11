@@ -16,6 +16,7 @@ public class Main
             if (args.length == 0)
             {
                 System.err.println("No args provided.");
+                System.err.println(Main.getUsageMessage());
                 System.exit(ExitCode.FAILURE);
             }
 
@@ -32,5 +33,12 @@ public class Main
             e.printStackTrace();
             System.exit(ExitCode.FAILURE);
         }
+    }
+
+    private static String getUsageMessage()
+    {
+        StringBuilder msg = new StringBuilder();
+        msg.append("bbb2 --list-buckets");
+        return msg.toString();
     }
 }

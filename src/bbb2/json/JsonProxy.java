@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import bbb2.exception.Bbb2Exception;
 
@@ -14,7 +15,7 @@ public class JsonProxy
 {
     public static <T> T fromJson(String json, Class<T> type)
     {
-        return new Gson().fromJson(json, type);
+        return JsonProxy.gson.fromJson(json, type);
     }
 
     public static <T> T fromJson(Path filePath, Class<T> type)
@@ -22,7 +23,7 @@ public class JsonProxy
     {
         try
         {
-            return new Gson().fromJson(
+            return JsonProxy.gson.fromJson(
                 new InputStreamReader(new FileInputStream(filePath.toFile()),
                                       StandardCharsets.UTF_8),
                 type
@@ -36,6 +37,9 @@ public class JsonProxy
 
     public static String toJson(Object o)
     {
-        return new Gson().toJson(o);
+        return JsonProxy.gson.toJson(o);
     }
+
+    private static Gson gson
+        = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 }
