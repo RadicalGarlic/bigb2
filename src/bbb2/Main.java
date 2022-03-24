@@ -25,8 +25,6 @@ public class Main
             {
                 System.exit(exitStatus);
             }
-
-            // Let main() end naturally if operation finishes with good status.
         }
         catch (Exception e)
         {
@@ -38,7 +36,7 @@ public class Main
     private static String getUsageMessage()
     {
         StringBuilder msg = new StringBuilder();
-        msg.append("bbb2 --list-buckets");
+        msg.append("Usage: bbb2 --list-buckets");
         return msg.toString();
     }
 }

@@ -26,8 +26,6 @@ public class ListBucketsRequest extends Request
                           .build();
     }
 
-    @Expose
-    private String accountId;
-
     private AuthorizeAccountResponse auth;
+    @Expose private String accountId;
 }

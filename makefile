@@ -6,9 +6,11 @@ SRC = src/bbb2/Main.java\
       src/bbb2/backblazeb2/api/BackblazeB2ApiProxy.java\
       src/bbb2/backblazeb2/api/request/AuthorizeAccountRequest.java\
       src/bbb2/backblazeb2/api/request/ListBucketsRequest.java\
+      src/bbb2/backblazeb2/api/request/StartLargeFileRequest.java\
       src/bbb2/backblazeb2/api/request/Request.java\
       src/bbb2/backblazeb2/api/response/AuthorizeAccountResponse.java\
       src/bbb2/backblazeb2/api/response/ListBucketsResponse.java\
+      src/bbb2/backblazeb2/api/response/StartLargeFileResponse.java\
       src/bbb2/backblazeb2/client/AppKey.java\
       src/bbb2/backblazeb2/client/BackblazeB2Client.java\
       src/bbb2/backblazeb2/client/response/ListBucketsResponse.java\
