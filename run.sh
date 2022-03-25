@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-exec java -cp bin/bbb2.jar:lib/gson/gson-2.8.9.jar bbb2.Main "$@"
+exec java -cp target/bbb2-1.0-SNAPSHOT.jar:target/dependency/gson-2.9.0.jar bbb2.Main "$@"
