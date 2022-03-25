@@ -1,7 +1,9 @@
 package bbb2.backblazeb2.client;
 
+import com.google.gson.annotations.Expose;
+
 public class AppKey
 {
-    public String keyId;
-    public String appKey;
+    @Expose public String keyId;
+    @Expose public String appKey;
 }

@@ -10,7 +10,6 @@ import bbb2.Util;
 import bbb2.exception.Bbb2Exception;
 import bbb2.exception.JsonParseException;
 import bbb2.http.HttpStatusCodes;
-import bbb2.json.JsonProxy;
 
 public class AuthorizeAccountResponse
 {
