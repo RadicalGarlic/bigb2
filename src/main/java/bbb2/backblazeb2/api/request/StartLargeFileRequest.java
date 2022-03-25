@@ -22,17 +22,18 @@ public class StartLargeFileRequest extends Request
     public HttpRequest toHttpRequest() throws Bbb2Exception
     {
         return HttpRequest.newBuilder()
-                  .uri(auth.apiUrl.resolve("/b2api/v2/b2_start_large_file"))
-                  .POST(Request.toHttpRequestBodyPublisher(this))
-                  .header(Request.AUTHORIZATION,
-                          this.auth.authorizationToken)
-                  .build();
+            .uri(auth.apiUrl.resolve("/b2api/v2/b2_start_large_file"))
+            .header(Request.AUTHORIZATION,
+                    this.auth.authorizationToken)
+            .POST(Request.toHttpRequestBodyPublisher(this))
+            .build();
     }
 
     @Expose
-    private static final String CONTENT_TYPE = "application/octet-stream";
+    private static final String contentType = "application/octet-stream";
 
-    private AuthorizeAccountResponse auth;
     @Expose private String bucketId;
     @Expose private String fileName;
+
+    private AuthorizeAccountResponse auth;
 }
