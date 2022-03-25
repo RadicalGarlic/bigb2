@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import bbb2.backblazeb2.api.ApiUrlUtil;
 import bbb2.backblazeb2.client.AppKey;
 import bbb2.exception.Bbb2Exception;
 import bbb2.json.JsonProxy;
@@ -27,7 +28,7 @@ public class AuthorizeAccountRequest extends Request
             String keyBase64 = Base64.getEncoder().encodeToString(keyBytes);
             String auth = "Basic" + keyBase64;
             return HttpRequest.newBuilder()
-                              .uri(AuthorizeAccountRequest.getAuthUri())
+                              .uri(ApiUrlUtil.getAuthUrl())
                               .GET()
                               .header(Request.AUTHORIZATION, auth)
                               .build();
