@@ -2,7 +2,7 @@ package bbb2.backblazeb2.api.request;
 
 import java.net.http.HttpRequest;
 
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import bbb2.backblazeb2.api.response.AuthorizeAccountResponse;
 import bbb2.backblazeb2.api.ApiUrlUtil;
@@ -28,6 +28,9 @@ public class ListBucketsRequest extends Request
                           .build();
     }
 
+    @JsonProperty(value = "accountId")
+    public String getAccountId() { return this.accountId; }
+
     private AuthorizeAccountResponse auth;
-    @Expose private String accountId;
+    private String accountId;
 }

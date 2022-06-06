@@ -2,8 +2,6 @@ package bbb2.backblazeb2.api.request;
 
 import java.net.http.HttpRequest;
 
-import com.google.gson.annotations.Expose;
-
 import bbb2.backblazeb2.api.response.AuthorizeAccountResponse;
 import bbb2.exception.Bbb2Exception;
 
@@ -29,11 +27,8 @@ public class StartLargeFileRequest extends Request
             .build();
     }
 
-    @Expose
     private static final String contentType = "application/octet-stream";
-
-    @Expose private String bucketId;
-    @Expose private String fileName;
-
+    private String bucketId;
+    private String fileName;
     private AuthorizeAccountResponse auth;
 }

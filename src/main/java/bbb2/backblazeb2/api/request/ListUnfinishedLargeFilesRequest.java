@@ -2,8 +2,6 @@ package bbb2.backblazeb2.api.request;
 
 import java.net.http.HttpRequest;
 
-import com.google.gson.annotations.Expose;
-
 import bbb2.backblazeb2.api.response.AuthorizeAccountResponse;
 import bbb2.exception.Bbb2Exception;
 
@@ -28,5 +26,5 @@ public class ListUnfinishedLargeFilesRequest extends Request
     }
 
     private AuthorizeAccountResponse auth;
-    @Expose private String bucketId;
+    private String bucketId;
 }
