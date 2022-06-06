@@ -1,21 +1,36 @@
 package bbb2.backblazeb2.api.response;
 
-import java.net.http.HttpResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import com.google.gson.annotations.Expose;
-
-import bbb2.Util;
-import bbb2.exception.Bbb2Exception;
-import bbb2.exception.JsonParseException;
-import bbb2.http.HttpStatusCodes;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AuthorizeAccountResponse
 {
-    @Expose public String accountId;
-    @Expose public String authorizationToken;
-    @Expose public URI apiUrl;
-    @Expose public URI downloadUrl;
-    @Expose public int recommendedPartSize;
+    @JsonCreator
+    public AuthorizeAccountResponse(
+        @JsonProperty(required = true, value = "accountId")
+        String accountId,
+        @JsonProperty(required = true, value = "authorizationToken")
+        String authorizationToken,
+        @JsonProperty(required = true, value = "apiUrl")
+        URI apiUrl,
+        @JsonProperty(required = true, value = "downloadUrl")
+        URI downloadUrl,
+        @JsonProperty(required = true, value = "recommendedPartSize")
+        int recommendedPartSize)
+    {
+        this.accountId = accountId;
+        this.authorizationToken = authorizationToken;
+        this.apiUrl = apiUrl;
+        this.downloadUrl = downloadUrl;
+        this.recommendedPartSize = recommendedPartSize;
+    }
+
+    public String accountId;
+    public String authorizationToken;
+    public URI apiUrl;
+    public URI downloadUrl;
+    public int recommendedPartSize;
 }

@@ -43,7 +43,7 @@ public class HttpsUrl
 
     private static Collector<CharSequence, ?, String> getPathCollector()
     {
-        return Collectors.joining("/", "/","");
+        return Collectors.joining("/", "/", "");
     }
 
     private List<String> domain;

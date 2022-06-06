@@ -37,13 +37,13 @@ public class BackblazeB2Client
     public void authorize() throws Bbb2Exception
     {
         this.auth = BackblazeB2ApiProxy.authorizeAccount(this.appKey);
+        System.out.println(this.auth.accountId);
     }
 
     public ListBucketsResponse listBuckets() throws Bbb2Exception
     {
         return new ListBucketsResponse(
-            BackblazeB2ApiProxy.listBuckets(this.auth)
-        );
+            BackblazeB2ApiProxy.listBuckets(this.auth));
     }
 
     private AppKey appKey = null;

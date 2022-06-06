@@ -6,6 +6,7 @@ import com.google.gson.annotations.Expose;
 
 import bbb2.backblazeb2.api.response.AuthorizeAccountResponse;
 import bbb2.backblazeb2.api.ApiUrlUtil;
+import bbb2.exception.Bbb2Exception;
 import bbb2.json.JsonProxy;
 
 public class ListBucketsRequest extends Request
@@ -17,7 +18,7 @@ public class ListBucketsRequest extends Request
     }
 
     @Override
-    public HttpRequest toHttpRequest()
+    public HttpRequest toHttpRequest() throws Bbb2Exception
     {
         return HttpRequest.newBuilder()
                           .uri(ApiUrlUtil.getListBucketsUrl(auth.apiUrl))

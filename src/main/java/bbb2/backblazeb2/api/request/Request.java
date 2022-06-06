@@ -13,6 +13,7 @@ public abstract class Request
     public abstract HttpRequest toHttpRequest() throws Bbb2Exception;
 
     public static HttpRequest.BodyPublisher toHttpRequestBodyPublisher(Object o)
+    throws Bbb2Exception
     {
         return HttpRequest.BodyPublishers.ofString(JsonProxy.toJson(o));
     }

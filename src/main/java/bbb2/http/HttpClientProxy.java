@@ -22,8 +22,7 @@ public class HttpClientProxy
         {
             return HttpClientProxy.httpClient.send(
                 req,
-                HttpResponse.BodyHandlers.ofString()
-            );
+                HttpResponse.BodyHandlers.ofString());
         }
         catch (IllegalArgumentException e)
         {
