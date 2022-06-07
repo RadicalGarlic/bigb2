@@ -27,6 +27,7 @@ public class BackblazeB2Client
     public BackblazeB2Client(Path appKeyFilePath, boolean authorize)
     throws Bbb2Exception
     {
+        this.auth = null;
         this.appKey = JsonProxy.fromJson(appKeyFilePath, AppKey.class);
         if (authorize)
         {
@@ -42,9 +43,10 @@ public class BackblazeB2Client
     public ListBucketsResponse listBuckets() throws Bbb2Exception
     {
         return new ListBucketsResponse(
-            BackblazeB2ApiProxy.listBuckets(this.auth));
+            BackblazeB2ApiProxy.listBuckets(this.auth)
+        );
     }
 
-    private AppKey appKey = null;
-    private AuthorizeAccountResponse auth = null;
+    private AppKey appKey;
+    private AuthorizeAccountResponse auth;
 }

@@ -23,7 +23,7 @@ public class AuthorizeAccountRequest extends Request
     {
         try
         {
-            String key = this.appKey.keyId + ":" + this.appKey.appKey;
+            String key = this.appKey.getKeyId() + ":" + this.appKey.getAppKey();
             byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
             String keyBase64 = Base64.getEncoder().encodeToString(keyBytes);
             String auth = "Basic" + keyBase64;
@@ -41,9 +41,9 @@ public class AuthorizeAccountRequest extends Request
 
     private static URI getAuthUri() throws URISyntaxException
     {
-        String uriString
-            = "https://api.backblazeb2.com/b2api/v2/b2_authorize_account";
-        return new URI(uriString);
+        return new URI(
+            "https://api.backblazeb2.com/b2api/v2/b2_authorize_account"
+        );
     }
 
     private AppKey appKey;

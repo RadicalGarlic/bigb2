@@ -38,10 +38,7 @@ public class JsonProxy
     {
         try
         {
-            return JsonProxy.objectMapper.readValue(
-                new InputStreamReader(new FileInputStream(filePath.toFile()),
-                                      StandardCharsets.UTF_8),
-                type);
+            return JsonProxy.objectMapper.readValue(filePath.toFile(), type);
         }
         catch (FileNotFoundException e)
         {

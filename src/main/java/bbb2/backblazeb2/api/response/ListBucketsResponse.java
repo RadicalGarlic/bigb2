@@ -11,8 +11,10 @@ public class ListBucketsResponse
     {
         @JsonCreator
         public Bucket(
-            @JsonProperty(required = true, value = "bucketName") String bucketName,
-            @JsonProperty(required = true, value = "bucketId") String bucketId)
+            @JsonProperty(required = true, value = "bucketName")
+            String bucketName,
+            @JsonProperty(required = true, value = "bucketId")
+            String bucketId)
         {
             this.bucketName = bucketName;
             this.bucketId = bucketId;
