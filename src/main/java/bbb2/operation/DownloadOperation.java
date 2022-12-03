@@ -35,6 +35,11 @@ public class DownloadOperation extends Operation
             {
                 throw new Bbb2Exception("Bad args.");
             }
+
+            System.out.println(String.format("DownloadOperation(): "
+                + "bucket=\"%s\", srcPath=\"%s\", dstPath=\"%s\"",
+                this.bucketName, this.bucketFilePath, this.dstFilePath)
+            );
         }
         catch (NoSuchElementException e)
         {
@@ -45,6 +50,7 @@ public class DownloadOperation extends Operation
     @Override
     public int execute() throws Bbb2Exception
     {
+
         throw new Bbb2Exception("unimplemented");
     }
 

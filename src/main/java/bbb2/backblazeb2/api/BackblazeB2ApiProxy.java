@@ -1,15 +1,14 @@
 package bbb2.backblazeb2.api;
 
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
 import bbb2.backblazeb2.api.request.AuthorizeAccountRequest;
 import bbb2.backblazeb2.api.request.CancelLargeFileRequest;
+import bbb2.backblazeb2.api.request.GetFileInfoRequest;
 import bbb2.backblazeb2.api.request.ListBucketsRequest;
 import bbb2.backblazeb2.api.request.ListUnfinishedLargeFilesRequest;
 import bbb2.backblazeb2.api.request.StartLargeFileRequest;
 import bbb2.backblazeb2.api.response.AuthorizeAccountResponse;
 import bbb2.backblazeb2.api.response.CancelLargeFileResponse;
+import bbb2.backblazeb2.api.response.GetFileInfoResponse;
 import bbb2.backblazeb2.api.response.ListBucketsResponse;
 import bbb2.backblazeb2.api.response.ListUnfinishedLargeFilesResponse;
 import bbb2.backblazeb2.api.response.StartLargeFileResponse;
@@ -68,5 +67,17 @@ public class BackblazeB2ApiProxy
         CancelLargeFileRequest req = new CancelLargeFileRequest(auth, fileId);
         return JsonProxy.fromJson(HttpClientProxy.send(req).body(),
                                   CancelLargeFileResponse.class);
+    }
+
+    public static GetFileInfoResponse getFileInfo(
+        AuthorizeAccountResponse auth,
+        String fileId)
+    throws Bbb2Exception
+    {
+        GetFileInfoRequest req = new GetFileInfoRequest(auth, fileId);
+        return JsonProxy.fromJson(
+            HttpClientProxy.send(req).body(),
+            GetFileInfoResponse.class
+        );
     }
 }
