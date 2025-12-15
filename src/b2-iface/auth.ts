@@ -7,8 +7,8 @@ import { isLeft } from 'fp-ts/lib/Either';
 
 import {
   AuthorizeAccountRequest,
-  AuthorizeAccountResponseType
-} from './api/authorize-account';
+  AuthorizeAccountResponse,
+} from 'b2-api/authorize-account';
 
 const AccountKey = t.type({
   keyId: t.string,
@@ -34,7 +34,7 @@ export async function getAccountKeyFromFile(filePath?: string)
 }
 
 export async function authorize(key?: AccountKeyType)
-  : Promise<AuthorizeAccountResponseType>
+  : Promise<AuthorizeAccountResponse>
 {
   return new AuthorizeAccountRequest(
     key ?? await getAccountKeyFromFile()

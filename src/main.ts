@@ -1,13 +1,14 @@
 import * as os from 'node:os';
 
-import { listBucketsOperation } from '#internal/operations/list-buckets';
+import { listBucketsOperation } from './operations/list-buckets';
 import { downloadOperation } from './operations/download';
 import { CopyOperation } from './operations/copy-operation';
 
 function getUsageMessage(): string {
-  return 'Usage: myb2 list-buckets'
-    + os.EOL + '  myb2 download bucket srcFilePath dstFilePath'
-    + os.EOL + `  myb2 copy ${CopyOperation.SRC_ARG} someBucket:some/file/path ${CopyOperation.DST_ARG} someOtherBucket:some/other/file/path`;
+  const indent = '  ';
+  return 'Usage: bigb2 list-buckets'
+    // + os.EOL + indent + 'bigb2 download bucket srcFilePath dstFilePath'
+    // + os.EOL + indent + `bigb2 copy ${CopyOperation.SRC_ARG} someBucket:some/file/path ${CopyOperation.DST_ARG} someOtherBucket:some/other/file/path`;
 }
 
 async function main() {
@@ -19,15 +20,15 @@ async function main() {
 
   if (process.argv[2] === 'list-buckets') {
     await listBucketsOperation();
-  } else if (process.argv[2] === 'download') {
-    if (process.argv.length < 6) {
-      console.log('Specify bucket, path, and output path');
-      console.log(getUsageMessage());
-      return;
-    }
-    await downloadOperation(process.argv[3], process.argv[4], process.argv[5]);
-  } else if ('copy' === process.argv[2]) {
-    new CopyOperation(process.argv.slice(3)).run();
+  // } else if (process.argv[2] === 'download') {
+  //   if (process.argv.length < 6) {
+  //     console.log('Specify bucket, path, and output path');
+  //     console.log(getUsageMessage());
+  //     return;
+  //   }
+  //   await downloadOperation(process.argv[3], process.argv[4], process.argv[5]);
+  // } else if ('copy' === process.argv[2]) {
+  //   new CopyOperation(process.argv.slice(3)).run();
   } else {
     console.log('Unrecognized args');
     console.log(getUsageMessage());

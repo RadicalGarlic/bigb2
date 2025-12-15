@@ -1,32 +1,29 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
-import { B2Error } from '#internal/b2/b2-error';
+import { B2Error } from 'b2-iface/b2-error';
 
 import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
 import { isLeft } from 'fp-ts/lib/Either';
 
-import { UrlProvider } from '#internal/b2/url-provider';
-import { Range } from '#internal/b2/range';
+import { UrlProvider } from 'b2-iface/url-provider';
 
-export class CopyPartRequest {
-  constructor(private args: {
-    apiUrl: URL,
-    authToken: string,
-    srcFileId: string,
-    dstLargeFileId: string,
-    range?: Range,
-    partNumber: number,
-  }) {}
+export class StartLargeFileRequest {
+  constructor(
+    private apiUrl: URL,
+    private authToken: string,
+    private bucketId: string,
+    private dstFilePath: string
+  ) {}
 
-  async send(): Promise<CopyPartResponseType> {
-    return new Promise<CopyPartResponseType>(
+  async send(): Promise<StartLargeFileResponseType> {
+    return new Promise<StartLargeFileResponseType>(
       (resolve, reject) => {
-        const url: URL = UrlProvider.startLargeFileUrl(this.args.apiUrl);
+        const url: URL = UrlProvider.startLargeFileUrl(this.apiUrl);
         const req: http.ClientRequest = https.request(
           url,
           {
-            headers: { Authorization: this.args.authToken },
+            headers: { Authorization: this.authToken },
             method: 'POST'
           }
         );
@@ -36,7 +33,7 @@ export class CopyPartRequest {
           res.on('data', (chunk: string) => { resChunks.push(chunk); });
           res.on('end', () => {
             const resBody: string = resChunks.join('');
-            const decoded = CopyPartResponse.decode(JSON.parse(resBody));
+            const decoded = StartLargeFileResponse.decode(JSON.parse(resBody));
             if (isLeft(decoded)) {
               reject(new Error(`Could not validate data: ${PathReporter.report(decoded).join('\n')}`));
             } else {
@@ -46,10 +43,9 @@ export class CopyPartRequest {
         });
         req.on('error', (err: Error) => { reject(err); });
         req.write(JSON.stringify({
-          sourceFileId: this.args.srcFileId,
-          largeFileId: this.args.dstLargeFileId,
-          partNumber: this.args.partNumber,
-          range: this.args.range ? this.args.range.toString() : undefined
+          bucketId: this.bucketId,
+          fileName: this.dstFilePath,
+          contentType: 'application/octet-stream'
         }));
         req.end();
       }
@@ -57,11 +53,10 @@ export class CopyPartRequest {
   }
 }
 
-const CopyPartResponse = t.type({
+const StartLargeFileResponse = t.type({
+  bucketId: t.string,
   fileId: t.string,
-  partNumber: t.Int,
-  contentLength: t.Int,
 });
-export type CopyPartResponseType = t.TypeOf<
-  typeof CopyPartResponse
+export type StartLargeFileResponseType = t.TypeOf<
+  typeof StartLargeFileResponse
 >;

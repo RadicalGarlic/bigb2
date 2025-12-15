@@ -7,7 +7,7 @@ import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
 import { isLeft } from 'fp-ts/lib/Either';
 
-import { UrlProvider } from '#internal/b2/url-provider';
+import { UrlProvider } from 'b2-iface/url-provider';
 
 export class GetDownloadAuthorizationRequest {
   constructor(

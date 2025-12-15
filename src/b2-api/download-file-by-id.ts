@@ -1,8 +1,8 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
-import { B2Error } from '#internal/b2/b2-error';
+import { B2Error } from 'b2-iface/b2-error';
 
-import { UrlProvider } from '#internal/b2/url-provider';
+import { UrlProvider } from 'b2-iface/url-provider';
 
 export class DownloadFileByIdRequest {
   constructor(

@@ -2,33 +2,33 @@ import * as fsPromises from 'node:fs/promises';
 import * as path from 'node:path';
 
 import {
-  AuthorizeAccountResponseType
-} from '#internal/b2/api/authorize-account';
-import { authorize } from '#internal/b2/auth';
+  AuthorizeAccountResponse
+} from 'b2-api/authorize-account';
+import { authorize } from 'b2-iface/auth';
 import {
   BucketType,
   ListBucketsRequest,
   ListBucketsResponseType
-} from '#internal/b2/api/list-buckets';
+} from 'b2-api/list-buckets';
 import {
   B2FileType,
   ListFileNamesRequest,
   ListFileNamesResponseType
-} from '#internal/b2/api/list-file-names';
+} from 'b2-api/list-file-names';
 import {
   ByteRange,
   DownloadFileByIdRequest,
   DownloadFileByIdResponseType
-} from '#internal/b2/api/download-file-by-id';
-import { filePathExists } from '#internal/utils/file-path-exists';
-import { DownloadChunkType, DownloadProgress } from '#internal/utils/download-progress';
+} from 'b2-api/download-file-by-id';
+import { filePathExists } from 'utils/file-path-exists';
+import { DownloadChunkType, DownloadProgress } from 'utils/download-progress';
 
 export async function downloadOperation(
   bucketName: string,
   srcFilePath: string,
   dstFilePath: string)
 {
-  const auths: AuthorizeAccountResponseType = await authorize();
+  const auths: AuthorizeAccountResponse = await authorize();
 
   const buckets: ListBucketsResponseType = await (new ListBucketsRequest(
     new URL(auths.apiUrl),
@@ -124,7 +124,7 @@ async function downloadLargeFile(
         console.log(`${curDownloaded}/${fileLen} (%${curDownloaded / fileLen})`);
       } catch (err: any) {
         if ((err?.b2ErrorBody?.code === 'expired_auth_token')) {
-          const auths: AuthorizeAccountResponseType = await authorize();
+          const auths: AuthorizeAccountResponse = await authorize();
           downloadUrl = new URL(auths.downloadUrl);
           authToken = auths.authorizationToken;
           consecutiveAuthFailures += 1;
