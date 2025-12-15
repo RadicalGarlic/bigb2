@@ -1,17 +1,19 @@
 {
-  "name": "myb2",
+  "name": "bigb2",
   "version": "0.0.1",
   "description": "",
-  "main": "main.js",
+  "main": "dist/bundle.js",
   "scripts": {
-    "build": "npx tsc && cp deploy-package.json dist/package.json",
+    "build": "npx webpack",
     "clean": "rm -rf dist/*"
   },
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
     "@types/node": "^20.8.6",
-    "typescript": "^5.2.2"
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.2.2",
+    "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "fp-ts": "^2.16.1",
