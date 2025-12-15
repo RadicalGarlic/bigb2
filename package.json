@@ -1,0 +1,25 @@
+{
+  "name": "myb2",
+  "version": "0.0.1",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "build": "npx tsc && cp deploy-package.json dist/package.json",
+    "clean": "rm -rf dist/*"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "imports": {
+    "#internal/*": [
+      "./*.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.6",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.1",
+    "io-ts": "^2.2.20"
+  }
+}

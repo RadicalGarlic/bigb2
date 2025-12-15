@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "outDir": "dist",
+    "baseUrl": "./",
+    "paths": {
+      "#internal/*": ["./src/*"]
+    }
+  },
+  "include": [ "src/**/*.ts" ]
+}
