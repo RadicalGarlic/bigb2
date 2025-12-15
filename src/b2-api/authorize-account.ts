@@ -1,9 +1,13 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
 
-import { AccountKeyType } from 'b2-iface/auth';
 import { UrlProvider } from 'b2-iface/url-provider';
 import { throwExpression } from 'utils/throw-expression';
+
+export interface AccountKey {
+  keyId: string;
+  appKey: string;
+}
 
 export interface AuthorizeAccountResponse {
   accountId: string;
@@ -15,9 +19,9 @@ export interface AuthorizeAccountResponse {
 }
 
 export class AuthorizeAccountRequest {
-  private readonly accountKey: AccountKeyType;
+  private readonly accountKey: AccountKey;
 
-  constructor(accountKey: AccountKeyType) {
+  constructor(accountKey: AccountKey) {
     this.accountKey = accountKey;
   }
 

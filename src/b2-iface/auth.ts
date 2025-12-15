@@ -1,39 +1,35 @@
 import * as fsPromises from 'node:fs/promises';
 import * as path from 'path';
 
-import * as t from 'io-ts';
-import { PathReporter } from 'io-ts/lib/PathReporter';
-import { isLeft } from 'fp-ts/lib/Either';
-
 import {
   AuthorizeAccountRequest,
   AuthorizeAccountResponse,
 } from 'b2-api/authorize-account';
+import { throwExpression } from 'utils/throw-expression';
 
-const AccountKey = t.type({
-  keyId: t.string,
-  appKey: t.string
-});
-export type AccountKeyType = t.TypeOf<typeof AccountKey>;
+export interface AccountKey {
+  keyId: string;
+  appKey: string;
+}
 
-export async function getAccountKeyFromFile(filePath?: string)
-  : Promise<AccountKeyType>
+async function getAccountKeyFromFile(filePath?: string)
+  : Promise<AccountKey>
 {
   if (!filePath) {
-    filePath = path.join(process.env['HOME'] ?? '', '.myb2', 'key.json');
+    filePath = path.join(process.env['HOME'] ?? '', '.bigb2', 'key.json');
   }
   const json: string = await fsPromises.readFile(
     filePath,
     { encoding: 'utf-8' }
   );
-  const decoded = AccountKey.decode(JSON.parse(json));
-  if (isLeft(decoded)) {
-    throw new Error(`Could not validate data: ${PathReporter.report(decoded).join('\n')}`);
-  }
-  return decoded.right;
+  const obj = JSON.parse(json);
+  return {
+    keyId: obj.keyId ?? throwExpression(new Error(`Missing "keyId", ${json}`)),
+    appKey: obj.appKey ?? throwExpression(new Error(`Missing "appKey", ${json}`)),
+  };
 }
 
-export async function authorize(key?: AccountKeyType)
+export async function authorize(key?: AccountKey)
   : Promise<AuthorizeAccountResponse>
 {
   return new AuthorizeAccountRequest(
