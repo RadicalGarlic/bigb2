@@ -1,12 +1,12 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
-import { B2Error } from 'b2-iface/b2-error';
 
 import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
 import { isLeft } from 'fp-ts/lib/Either';
 
 import { UrlProvider } from 'b2-iface/url-provider';
+import { B2ApiError } from './b2-api-error';
 
 export class StartLargeFileRequest {
   constructor(
@@ -35,7 +35,7 @@ export class StartLargeFileRequest {
             const resBody: string = resChunks.join('');
             const decoded = StartLargeFileResponse.decode(JSON.parse(resBody));
             if (isLeft(decoded)) {
-              reject(new Error(`Could not validate data: ${PathReporter.report(decoded).join('\n')}`));
+              reject(new B2ApiError(`Could not validate data: ${PathReporter.report(decoded).join('\n')}`));
             } else {
               resolve(decoded.right);
             }

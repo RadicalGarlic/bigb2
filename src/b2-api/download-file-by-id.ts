@@ -1,8 +1,8 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
-import { B2Error } from 'b2-iface/b2-error';
 
 import { UrlProvider } from 'b2-iface/url-provider';
+import { B2ApiError } from './b2-api-error';
 
 export class DownloadFileByIdRequest {
   constructor(
@@ -37,8 +37,8 @@ export class DownloadFileByIdRequest {
             } else {
               const resBodyBuffer: Buffer = Buffer.concat(chunks);
               const resBodyString: string = resBodyBuffer.toString('utf-8');
-              if (B2Error.isB2Error(resBodyString)) {
-                reject(new Error(resBodyString));
+              if (B2ApiError.isB2ApiError(resBodyString)) {
+                reject(B2ApiError.fromJson(resBodyString));
               }
               resolve({ payload: resBodyBuffer });
             }

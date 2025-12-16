@@ -1,0 +1,37 @@
+import { Bigb2Error } from "bigb2-error";
+import { throwExpression } from "utils/throw-expression";
+import { isNum } from "utils/is-num";
+
+export interface B2ApiErrorBody {
+  code: string;
+  message: string;
+  status: number;
+}
+
+export class B2ApiError extends Bigb2Error {
+  constructor(public msg: string, public options?: { cause: Error }, private readonly b2ApiErrorBody?: B2ApiErrorBody, ) {
+    const fullMsg = [msg, `B2ApiErrorBody=${JSON.stringify(b2ApiErrorBody)}`].filter((value: string) => value).join(' ');
+    super(fullMsg, options);
+  }
+
+  public static fromJson(json: string): B2ApiError {
+    const obj = JSON.parse(json);
+    return new B2ApiError(
+      "B2 API error",
+      undefined,
+      {
+        code: obj.code ?? throwExpression(new Bigb2Error(`Malformed B2ApiError, missing "code", json=${json}`)),
+        message: obj.message ?? throwExpression(new Bigb2Error(`Malformed B2ApiError, missing "message", json=${json}`)),
+        status: isNum(obj.status) ? parseInt(obj.status) : throwExpression(new Bigb2Error(`Malformed B2ApiError, bad "status", json=${json}`)),
+      },
+    )
+  }
+
+  public static isB2ApiError(json: string): boolean {
+    const obj = JSON.parse(json);
+    return ((obj.code) 
+      && (obj.message) 
+      && (!isNaN(parseInt(obj.status)))
+    );
+  }
+}

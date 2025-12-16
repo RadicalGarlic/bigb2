@@ -1,6 +1,5 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
-import { B2Error } from 'b2-iface/b2-error';
 
 import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
