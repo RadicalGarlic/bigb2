@@ -5,8 +5,10 @@ import { downloadOperation } from './operations/download';
 import { CopyOperation } from './operations/copy-operation';
 
 function getUsageMessage(): string {
-  const indent = '  ';
-  return 'Usage: bigb2 list-buckets'
+  const INDENT = '  ';
+  const APP_NAME = 'bigb2'
+  return 'Usage: '
+    + `${os.EOL}${INDENT}${APP_NAME} list-buckets`
     // + os.EOL + indent + 'bigb2 download bucket srcFilePath dstFilePath'
     // + os.EOL + indent + `bigb2 copy ${CopyOperation.SRC_ARG} someBucket:some/file/path ${CopyOperation.DST_ARG} someOtherBucket:some/other/file/path`;
 }
