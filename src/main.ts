@@ -13,11 +13,11 @@ function getUsageMessage(): string {
     // + os.EOL + indent + `bigb2 copy ${CopyOperation.SRC_ARG} someBucket:some/file/path ${CopyOperation.DST_ARG} someOtherBucket:some/other/file/path`;
 }
 
-async function main() {
+async function main(): Promise<null> {
   if (process.argv.length < 3) {
     console.log('Not enough args');
     console.log(getUsageMessage());
-    return;
+    return null;
   }
 
   if (process.argv[2] === 'list-buckets') {
@@ -35,6 +35,9 @@ async function main() {
     console.log('Unrecognized args');
     console.log(getUsageMessage());
   }
+  return null;
 }
 
-main();
+main()
+  .then((value: null) => {})
+  .catch((err: unknown) => { throw err; });
