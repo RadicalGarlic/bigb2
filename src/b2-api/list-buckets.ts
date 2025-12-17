@@ -14,9 +14,7 @@ export class ListBucketsRequest {
     private authToken: string,
     private accountId: string,
     private bucketName?: string
-  ) {
-
-  }
+  ) { }
 
   async send(): Promise<ListBucketsResponseType> {
     return new Promise<ListBucketsResponseType>((resolve, reject) => {

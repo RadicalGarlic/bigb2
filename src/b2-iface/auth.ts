@@ -12,6 +12,32 @@ export interface AccountKey {
   appKey: string;
 }
 
+export interface AuthorizeResult {
+  accountId: string;
+  authorizationToken: string;
+  apiUrl: string;
+  downloadUrl: string;
+  recommendedPartSize: number;
+  absoluteMinimumPartSize: number;
+}
+
+export async function authorize(key?: AccountKey)
+  : Promise<AuthorizeResult>
+{
+  const resPromise: Promise<AuthorizeAccountResponse> = new AuthorizeAccountRequest(
+    key ?? await getAccountKeyFromFile()
+  ).send();
+  const res: AuthorizeAccountResponse = await resPromise;
+  return {
+    accountId: res.accountId,
+    authorizationToken: res.authorizationToken,
+    apiUrl: res.apiUrl,
+    downloadUrl: res.downloadUrl,
+    recommendedPartSize: res.recommendedPartSize,
+    absoluteMinimumPartSize: res.absoluteMinimumPartSize,
+  };
+}
+
 async function getAccountKeyFromFile(filePath?: string)
   : Promise<AccountKey>
 {
@@ -27,12 +53,4 @@ async function getAccountKeyFromFile(filePath?: string)
     keyId: obj.keyId ?? throwExpression(new Error(`Missing "keyId", ${json}`)),
     appKey: obj.appKey ?? throwExpression(new Error(`Missing "appKey", ${json}`)),
   };
-}
-
-export async function authorize(key?: AccountKey)
-  : Promise<AuthorizeAccountResponse>
-{
-  return new AuthorizeAccountRequest(
-    key ?? await getAccountKeyFromFile()
-  ).send();
 }

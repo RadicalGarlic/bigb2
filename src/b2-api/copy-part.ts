@@ -16,7 +16,7 @@ export class CopyPartRequest {
     dstLargeFileId: string,
     range?: Range,
     partNumber: number,
-  }) {}
+  }) { }
 
   async send(): Promise<CopyPartResponseType> {
     return new Promise<CopyPartResponseType>(
