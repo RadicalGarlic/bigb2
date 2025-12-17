@@ -11,5 +11,5 @@ export async function listBucketsOperation() {
     auths.authorizationToken,
     auths.accountId
   ).send();
-  console.log(JSON.stringify(bucketsRes));
+  console.log(JSON.stringify(bucketsRes, undefined, 2));
 }
