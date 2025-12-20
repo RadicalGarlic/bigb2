@@ -1,15 +1,10 @@
-import { authorize, AuthorizeResult } from 'b2-iface/auth';
 import {
-  ListBucketsRequest,
-  ListBucketsResponseType
-} from 'b2-api/list-buckets';
+  ListBucketsResponse,
+} from 'b2-api/calls/list-buckets';
+import { B2Api } from 'b2-api/b2-api';
 
 export async function listBucketsOperation() {
-  const auths: AuthorizeResult = await authorize();
-  const bucketsRes: ListBucketsResponseType = await new ListBucketsRequest(
-    new URL(auths.apiUrl),
-    auths.authorizationToken,
-    auths.accountId
-  ).send();
+  const b2Api = await B2Api.fromKeyFile();
+  const bucketsRes: ListBucketsResponse = await b2Api.listBuckets();
   console.log(JSON.stringify(bucketsRes, undefined, 2));
 }

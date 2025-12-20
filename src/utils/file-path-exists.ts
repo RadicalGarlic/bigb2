@@ -5,8 +5,7 @@ export async function filePathExists(filePath: string): Promise<boolean> {
     await fsPromises.stat(filePath);
     return true;
   } catch (err: unknown) {
-    const systemErr = err as NodeJS.ErrnoException;
-    if (systemErr?.code === 'ENOENT') {
+    if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
       return false;
     }
     throw err;

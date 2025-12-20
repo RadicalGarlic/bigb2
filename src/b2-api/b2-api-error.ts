@@ -29,9 +29,9 @@ export class B2ApiError extends Bigb2Error {
 
   public static isB2ApiError(json: string): boolean {
     const obj = JSON.parse(json);
-    return ((obj.code) 
-      && (obj.message) 
-      && (!isNaN(parseInt(obj.status)))
+    return ((obj.code)
+      && (obj.message)
+      && (isNum(obj.status))
     );
   }
 

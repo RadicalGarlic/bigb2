@@ -2,7 +2,7 @@ import * as https from 'node:https';
 import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
-import { B2ApiError } from './b2-api-error';
+import { B2ApiError } from 'b2-api/b2-api-error';
 
 export class DownloadFileByIdRequest {
   constructor(

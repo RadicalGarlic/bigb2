@@ -6,7 +6,7 @@ import { PathReporter } from 'io-ts/PathReporter';
 import { isLeft } from 'fp-ts/lib/Either';
 
 import { UrlProvider } from 'b2-iface/url-provider';
-import { B2ApiError } from './b2-api-error';
+import { B2ApiError } from 'b2-api/b2-api-error';
 
 export class StartLargeFileRequest {
   constructor(
