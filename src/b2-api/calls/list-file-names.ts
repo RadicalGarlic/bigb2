@@ -1,11 +1,23 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
 
-import * as t from 'io-ts';
-import { PathReporter } from 'io-ts/PathReporter';
-import { isLeft } from 'fp-ts/lib/Either';
-
 import { UrlProvider } from 'b2-iface/url-provider';
+import { B2ApiError } from 'b2-api/b2-api-error';
+import { throwExpression } from 'utils/throw-expression';
+import { assertNum } from 'utils/num-check';
+
+export interface File {
+  accountId: string;
+  bucketId: string;
+  fileId: string;
+  fileName: string;
+  contentLength: number;
+}
+
+export interface ListFileNamesResponse {
+  files: File[];
+  nextFileName: string | null;
+};
 
 export class ListFileNamesRequest {
   constructor(
@@ -13,61 +25,56 @@ export class ListFileNamesRequest {
     private authToken: string,
     private bucketId: string,
     private maxFileCount?: number,
-    private startFileName?: string
+    private startFilePath?: string
   ) { }
 
-  async send(): Promise<ListFileNamesResponseType> {
-    return new Promise<ListFileNamesResponseType>((resolve, reject) => {
+  async send(): Promise<ListFileNamesResponse> {
+    return new Promise<ListFileNamesResponse>((resolve, reject) => {
       const url: URL = UrlProvider.listFileNamesUrl(this.apiUrl);
       url.searchParams.append('bucketId', this.bucketId);
       if (this.maxFileCount) {
         url.searchParams.append('maxFileCount', `${this.maxFileCount}`);
       }
-      if (this.startFileName) {
-        url.searchParams.append('startFileName', this.startFileName);
+      if (this.startFilePath) {
+        url.searchParams.append('startFilePath', this.startFilePath);
       }
-      const req: http.ClientRequest = https.get(
+      https.get(
         url,
         {
           headers: { Authorization: this.authToken }
         },
-        ((res: http.IncomingMessage) => {
-          const chunks: string[] = [];
-          res.on('data', (chunk: string) => { chunks.push(chunk); });
-          res.on('error', (err: Error) => { reject(err); });
+        (res: http.IncomingMessage) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (chunk: Buffer) => { chunks.push(chunk); });
+          res.on('error', (err: Error) => {
+            return reject(new B2ApiError('ListFileNamesRequest error', { cause: err }));
+          });
           res.on('end', () => {
             if (!res.complete) {
-              reject(new Error('API call interrupted'));
-            } else {
-              const resBody: string = JSON.parse(chunks.join(''));
-              const decoded = ListFileNamesResponse.decode(resBody);
-              if (isLeft(decoded)) {
-                reject(new Error(`Could not validate data: ${PathReporter.report(decoded).join('\n')}`));
-              } else {
-                resolve(decoded.right);
-              }
+              return reject(new B2ApiError('ListFileNamesRequest interrupted'));
             }
+            const resBodyString: string = Buffer.concat(chunks).toString('utf-8');
+            const resBodyObj = JSON.parse(resBodyString);
+            return resolve({
+              files: resBodyObj?.files?.map((file: any) => {
+                return {
+                  accountId: file?.accountId
+                    ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (accountId). JSON=${resBodyString}`)),
+                  bucketId: file?.bucketId
+                    ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (bucketId). JSON=${resBodyString}`)),
+                  fileId: file?.fileId
+                    ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (fileId). JSON=${resBodyString}`)),
+                  fileName: file?.fileName
+                    ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (fileName). JSON=${resBodyString}`)),
+                  contentLength:
+                    assertNum(file?.contentLength, new B2ApiError(`ListFileNamesRequest parse error (contentLength). JSON=${resBodyString}`)),
+                };
+              }),
+              nextFileName: resBodyObj?.nextFileName,
+            });
           });
-        })
+        }
       );
-      req.on('error', (err: Error) => {
-        reject(err);
-      });
     });
   }
 }
-
-const B2File = t.type({
-  accountId: t.string,
-  bucketId: t.string,
-  fileId: t.string,
-  fileName: t.string,
-  contentLength: t.number
-});
-export type B2FileType = t.TypeOf<typeof B2File>;
-
-const ListFileNamesResponse = t.type({
-  files: t.array(B2File),
-  nextFileName: t.union([t.string, t.null])
-});
-export type ListFileNamesResponseType = t.TypeOf<typeof ListFileNamesResponse>;

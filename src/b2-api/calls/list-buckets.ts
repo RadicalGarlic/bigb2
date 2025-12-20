@@ -42,7 +42,7 @@ export class ListBucketsRequest {
         {
           headers: { Authorization: this.authToken },
         },
-        ((res: IncomingMessage) => {
+        (res: IncomingMessage) => {
           res.on('data', (chunk: Buffer) => {
             chunks.push(chunk);
           });
@@ -64,10 +64,10 @@ export class ListBucketsRequest {
             }) ?? throwExpression(new B2ApiError(`ListBucketsResponse parse error. JSON=${resJson}`));
             return resolve({ buckets });
           });
-          res.on('error', (err: unknown) => {
-            reject(err);
+          res.on('error', (err: Error) => {
+            return reject(new B2ApiError('ListBucketsRequest error', { cause: err }));
           });
-        })
+        }
       );
     });
   }

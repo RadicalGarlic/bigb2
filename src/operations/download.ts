@@ -1,24 +1,16 @@
 import * as fsPromises from 'node:fs/promises';
 import * as path from 'node:path';
 
-import {
-  Bucket,
-  ListBucketsRequest,
-  ListBucketsResponse
-} from 'b2-api/calls/list-buckets';
-import {
-  B2FileType,
-  ListFileNamesRequest,
-  ListFileNamesResponseType
-} from 'b2-api/calls/list-file-names';
+import { B2Api } from 'b2-api/b2-api';
+import { Bucket, getBucketByName } from 'b2-iface/buckets';
+import { File, getFileByPath } from 'b2-iface/files';
+
+
 import {
   ByteRange,
   DownloadFileByIdRequest,
   DownloadFileByIdResponseType
 } from 'b2-api/calls/download-file-by-id';
-import { filePathExists } from 'utils/file-path-exists';
-import { DownloadChunkType, DownloadProgress } from 'utils/download-progress';
-import { B2ApiError } from 'b2-api/b2-api-error';
 import { Bigb2Error } from 'bigb2-error';
 
 export async function downloadOperation(
@@ -26,33 +18,16 @@ export async function downloadOperation(
   srcFilePath: string,
   dstFilePath: string
 ) {
-  // const auths: AuthorizeResult = await authorize();
+  const b2Api: B2Api = await B2Api.fromKeyFile();
+  const bucket: Bucket = await getBucketByName(b2Api, bucketName);
+  const file: File = await getFileByPath(b2Api, bucket.bucketId, srcFilePath);
 
-  // const buckets: ListBucketsResponse = await (new ListBucketsRequest(
-  //   new URL(auths.apiUrl),
-  //   auths.authorizationToken,
-  //   auths.accountId,
-  //   bucketName)
-  // ).send();
-  // if (buckets.buckets.length <= 0) {
-  //   throw new Bigb2Error(`No buckets found for bucket name ${bucketName}`);
-  // }
-  // if (buckets.buckets.length > 1) {
-  //   console.warn(`Multiple buckets found for bucket name ${bucketName}. Using bucket "${buckets.buckets[0].bucketName}".`);
-  // }
-  // const bucket: Bucket = buckets.buckets[0];
 
-  // const files: ListFileNamesResponseType = await (new ListFileNamesRequest(
-  //   new URL(auths.apiUrl),
-  //   auths.authorizationToken,
-  //   bucket.bucketId,
-  //   1,
-  //   srcFilePath
-  // )).send();
-  // if ((files.files.length < 1) || (files.files[0].fileName !== srcFilePath)) {
-  //   throw new Bigb2Error(`File "${srcFilePath}" not found in bucket "${bucketName}"`);
-  // }
-  // const file: B2FileType = files.files[0];
+
+
+
+
+
 
   // if (file.contentLength <= auths.recommendedPartSize) {
   //   const req = new DownloadFileByIdRequest(

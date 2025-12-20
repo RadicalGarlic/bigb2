@@ -1,6 +1,6 @@
 import { Bigb2Error } from "bigb2-error";
 import { throwExpression } from "utils/throw-expression";
-import { isNum } from "utils/is-num";
+import { isNum } from "utils/num-check";
 
 export interface B2ApiErrorBody {
   code: string;

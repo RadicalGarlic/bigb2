@@ -5,6 +5,7 @@ import { Bigb2Error } from "bigb2-error";
 import { AuthorizeAccountRequest, AuthorizeAccountResponse } from "./calls/authorize-account";
 import { ListBucketsRequest, ListBucketsResponse } from "./calls/list-buckets";
 import { throwExpression } from 'utils/throw-expression';
+import { ListFileNamesRequest, ListFileNamesResponse } from './calls/list-file-names';
 
 interface AccountKey {
   keyId: string;
@@ -43,16 +44,32 @@ export class B2Api {
   // async copyPart() {}
 
   async listBuckets(bucketName?: string): Promise<ListBucketsResponse> {
-    if (!this.auths) {
-      throw new Bigb2Error('B2Api not authed');
-    }
+    this.checkAuth();
     const req = new ListBucketsRequest(
-      new URL(this.auths.apiUrl),
-      this.auths.authorizationToken,
-      this.auths.accountId,
+      new URL(this.auths!.apiUrl),
+      this.auths!.authorizationToken,
+      this.auths!.accountId,
       bucketName,
     );
     return req.send();
+  }
+
+  async listFileNames(bucketId: string, maxFileCount?: number, startFilePath?: string): Promise<ListFileNamesResponse> {
+    this.checkAuth();
+    const req = new ListFileNamesRequest(
+      new URL(this.auths!.apiUrl),
+      this.auths!.authorizationToken,
+      bucketId,
+      maxFileCount,
+      startFilePath,
+    );
+    return req.send();
+  }
+
+  private checkAuth() {
+    if (!this.auths) {
+      throw new Bigb2Error('B2Api no authed');
+    }
   }
 
   public auths: AuthorizeAccountResponse | null;
