@@ -9,8 +9,8 @@ export interface B2ApiErrorBody {
 }
 
 export class B2ApiError extends Bigb2Error {
-  constructor(public msg: string, public options?: { cause: Error }, public readonly b2ApiErrorBody?: B2ApiErrorBody, ) {
-    const fullMsg = [msg, `B2ApiErrorBody=${JSON.stringify(b2ApiErrorBody)}`].filter((value: string) => value).join(' ');
+  constructor(message: string, options?: { cause: Error }, public readonly b2ApiErrorBody?: B2ApiErrorBody, ) {
+    const fullMsg = [message, `B2ApiErrorBody=${JSON.stringify(b2ApiErrorBody)}`].filter((value: string) => value).join(' ');
     super(fullMsg, options);
   }
 

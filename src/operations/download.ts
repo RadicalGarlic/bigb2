@@ -19,17 +19,26 @@ export async function downloadOperation(
   dstFilePath: string
 ) {
   const b2Api: B2Api = await B2Api.fromKeyFile();
+  if (!b2Api.auths) {
+    throw new Bigb2Error('Failed to auth B2Api');
+  }
   const bucket: Bucket = await getBucketByName(b2Api, bucketName);
   const file: File = await getFileByPath(b2Api, bucket.bucketId, srcFilePath);
+  if (file.contentLength <= b2Api.auths.recommendedPartSize) {
+    smallDownload();
+  } else {
+    largeDownload(
+      new URL(b2Api.auths.downloadUrl),
+      b2Api.auths.authorizationToken,
+      file.fileId,
+      dstFilePath,
+      file.contentLength,
+      b2Api.auths.recommendedPartSize
+    );
+  }
+}
 
-
-
-
-
-
-
-
-  // if (file.contentLength <= auths.recommendedPartSize) {
+async function smallDownload() {
   //   const req = new DownloadFileByIdRequest(
   //     new URL(auths.downloadUrl),
   //     auths.authorizationToken,
@@ -38,19 +47,6 @@ export async function downloadOperation(
   //   );
   //   const res: DownloadFileByIdResponseType = await req.send();
   //   await fsPromises.writeFile(dstFilePath, res.payload);
-  // } else {
-  //   largeDownload(
-  //     new URL(auths.downloadUrl),
-  //     auths.authorizationToken,
-  //     file.fileId,
-  //     dstFilePath,
-  //     file.contentLength,
-  //     auths.recommendedPartSize
-  //   );
-  // }
-}
-
-async function smallDownload() {
 }
 
 async function largeDownload(

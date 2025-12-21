@@ -24,7 +24,7 @@ export class DownloadFileByIdRequest {
             Range: this.range?.toString() ?? undefined
           }
         },
-        ((res: http.IncomingMessage) => {
+        (res: http.IncomingMessage) => {
           const chunks: Buffer[] = [];
           res.on('data', (chunk: Buffer) => { chunks.push(chunk); });
           res.on('error', (err: Error) => {
@@ -43,7 +43,7 @@ export class DownloadFileByIdRequest {
               resolve({ payload: resBodyBuffer });
             }
           });
-        })
+        }
       );
       req.on('error', (err: Error) => { reject(err); });
     });
