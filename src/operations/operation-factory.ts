@@ -21,7 +21,6 @@ export class OperationFactory {
       throw new UsageError('Unrecognized arg');
     }
 
-    operation.parseCliArgs(cliArgs);
     return operation;
   }
 }

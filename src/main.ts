@@ -14,7 +14,9 @@ function getUsageMessage(): string {
 
 async function main(): Promise<void> {
   try {
-    process.exitCode = await OperationFactory.get(process.argv).run();
+    const operation = await OperationFactory.get(process.argv);
+    operation.parseCliArgs(process.argv);
+    process.exitCode = await operation.run();
   } catch (err: unknown) {
     if (err instanceof UsageError) {
       console.log(err.message);
