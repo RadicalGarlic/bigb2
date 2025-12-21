@@ -1,6 +1,7 @@
-import { ListBuckets } from "./list-buckets";
+import { ListBuckets } from "./list-buckets-operation";
 import { Operation } from "./operation";
 import { UsageError } from "./usage-error";
+import { DownloadOperation } from "./download-operation";
 
 export class OperationFactory {
   private constructor() { }
@@ -13,11 +14,13 @@ export class OperationFactory {
     let operation: Operation | null = null;
     if (cliArgs[2] === 'list-buckets') {
       operation = new ListBuckets();
+    } else if (cliArgs[2] === 'download') {
+      operation = new DownloadOperation();
     }
-
     if (!operation) {
       throw new UsageError('Unrecognized arg');
     }
+
     operation.parseCliArgs(cliArgs);
     return operation;
   }
