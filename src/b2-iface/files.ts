@@ -10,13 +10,10 @@ export interface File {
   contentLength: number;
 }
 
-export async function getFileByPath(b2Api: B2Api, bucketId: string, filePath: string) {
+export async function getFileByPath(b2Api: B2Api, bucketId: string, filePath: string): Promise<File> {
   const files: ListFileNamesResponse = await b2Api.listFileNames(bucketId, undefined, filePath);
-  if (files.files.length <= 0) {
-    throw new Bigb2Error(`No files found for filePath=${filePath} in bucketId=${bucketId}`);
-  }
-  if (files.files.length > 1) {
-    throw new Bigb2Error(`Multiple files found for filePath=${filePath} in bucketId=${bucketId}`);
+  if ((files.files.length <= 0) || (files.files[0].fileName !== filePath)) {
+    throw new Bigb2Error(`No files found for filePath=${filePath} in bucketId=${bucketId}. Response=${JSON.stringify(files)}`);
   }
   return {
     accountId: files.files[0].accountId,
