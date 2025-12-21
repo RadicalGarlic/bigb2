@@ -21,6 +21,7 @@ async function main(): Promise<void> {
     if (err instanceof UsageError) {
       console.log(err.message);
       console.log(getUsageMessage());
+      process.exitCode = 1;
     } else {
       throw err;
     }
