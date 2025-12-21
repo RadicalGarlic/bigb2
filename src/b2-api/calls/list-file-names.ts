@@ -5,6 +5,7 @@ import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { throwExpression } from 'utils/throw-expression';
 import { assertNum } from 'utils/num-check';
+import { B2Api } from 'b2-api/b2-api';
 
 export interface File {
   accountId: string;
@@ -36,7 +37,7 @@ export class ListFileNamesRequest {
         url.searchParams.append('maxFileCount', `${this.maxFileCount}`);
       }
       if (this.startFilePath) {
-        url.searchParams.append('startFilePath', this.startFilePath);
+        url.searchParams.append('startFileName', this.startFilePath);
       }
       https.get(
         url,
@@ -55,6 +56,9 @@ export class ListFileNamesRequest {
             }
             const resBodyString: string = Buffer.concat(chunks).toString('utf-8');
             const resBodyObj = JSON.parse(resBodyString);
+            if (res.statusCode !== 200 || B2ApiError.isB2ApiError(resBodyString)) {
+              throw new B2ApiError('ListFileNamesRequest error', undefined, resBodyObj);
+            }
             return resolve({
               files: resBodyObj?.files?.map((file: any) => {
                 return {
@@ -69,7 +73,7 @@ export class ListFileNamesRequest {
                   contentLength:
                     assertNum(file?.contentLength, new B2ApiError(`ListFileNamesRequest parse error (contentLength). JSON=${resBodyString}`)),
                 };
-              }),
+              }) ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (files). JSON=${resBodyString}`)),
               nextFileName: resBodyObj?.nextFileName,
             });
           });
