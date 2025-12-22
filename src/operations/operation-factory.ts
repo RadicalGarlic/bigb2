@@ -1,7 +1,7 @@
 import { ListBuckets } from "./list-buckets-operation";
 import { Operation } from "./operation";
 import { UsageError } from "./usage-error";
-import { DownloadOperation } from "./download-operation";
+import { DownloadOperation } from "./download-operation/download-operation";
 
 export class OperationFactory {
   private constructor() { }

@@ -6,16 +6,23 @@ import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
 import { isLeft } from 'fp-ts/lib/Either';
 
-import { fullRead } from './file-full-read';
-import { sha1Hex } from './hasher';
-import { filePathExists } from './file-path-exists';
+import { fullRead } from '../../utils/file-full-read';
+import { sha1Hex } from '../../utils/hasher';
+import { filePathExists } from '../../utils/file-path-exists';
+
+export interface DownloadProgressChunk {
+  startByte: number;
+  length: number;
+  hash: string;
+}
+
+export interface DownloadProgressChunks {
+  absoluteFilePath: string,
+  chunks: DownloadProgressChunk[],
+}
 
 export class DownloadProgress {
-  constructor(public chunks: DownloadChunksType) { }
-
-  static readonly DEFAULT_PROGRESS_FILE_NAME = '.b2-download-progress.json';
-
-  private static readonly HASH_ALG = 'sha1';
+  constructor(public chunks: DownloadProgressChunks) { }
 
   static async fromJsonFile(
     downloadFilePath: string,
@@ -105,16 +112,3 @@ export class DownloadProgress {
     }
   }
 }
-
-const DownloadChunk = t.type({
-  startByte: t.number,
-  length: t.number,
-  hash: t.string
-});
-export type DownloadChunkType = t.TypeOf<typeof DownloadChunk>;
-
-const DownloadChunks = t.type({
-  absoluteFilePath: t.string,
-  chunks: t.array(DownloadChunk)
-});
-export type DownloadChunksType = t.TypeOf<typeof DownloadChunks>;
