@@ -9,7 +9,7 @@ import { File, getFileByPath } from 'b2-iface/files';
 import {
   ByteRange,
   DownloadFileByIdRequest,
-  DownloadFileByIdResponseType
+  DownloadFileByIdResponse,
 } from 'b2-api/calls/download-file-by-id';
 import { Bigb2Error } from 'bigb2-error';
 import { Operation } from './operation';
@@ -47,36 +47,39 @@ export class DownloadOperation extends Operation {
     }
     console.log(`Downloading file "${this.srcFilePath}" from bucket "${this.bucketName}" to "${this.dstFilePath}"`);
 
-    const b2Api: B2Api = await B2Api.fromKeyFile();
-    if (!b2Api.auths) {
+    this.b2Api = await B2Api.fromKeyFile();
+    if (!this.b2Api.auths) {
       throw new Bigb2Error('Failed to auth B2Api');
     }
-    const bucket: Bucket = await getBucketByName(b2Api, this.bucketName);
-    const file: File = await getFileByPath(b2Api, bucket.bucketId, this.srcFilePath);
-    if (file.contentLength <= b2Api.auths.recommendedPartSize) {
-      this.smallDownload();
+    const bucket: Bucket = await getBucketByName(this.b2Api, this.bucketName);
+    const file: File = await getFileByPath(this.b2Api, bucket.bucketId, this.srcFilePath);
+    if (file.contentLength <= this.b2Api.auths.recommendedPartSize) {
+      this.smallDownload(file.fileId, this.dstFilePath);
     } else {
-      this.largeDownload(
-        new URL(b2Api.auths.downloadUrl),
-        b2Api.auths.authorizationToken,
-        file.fileId,
-        this.dstFilePath,
-        file.contentLength,
-        b2Api.auths.recommendedPartSize
-      );
+      console.log('largeDownload() not yet implemented');
+      // this.largeDownload(
+      //   new URL(this.b2Api.auths.downloadUrl),
+      //   this.b2Api.auths.authorizationToken,
+      //   file.fileId,
+      //   this.dstFilePath,
+      //   file.contentLength,
+      //   this.b2Api.auths.recommendedPartSize
+      // );
     }
     return 0;
   }
 
-  private async smallDownload() {
-    // const req = new DownloadFileByIdRequest(
-    //   new URL(auths.downloadUrl),
-    //   auths.authorizationToken,
-    //   file.fileId,
-    //   new ByteRange(0, file.contentLength - 1)
-    // );
-    // const res: DownloadFileByIdResponseType = await req.send();
-    // await fsPromises.writeFile(dstFilePath, res.payload);
+  private async smallDownload(srcFileId: string, dstFilePath: string) {
+    if (!this.b2Api?.auths) {
+      throw new Bigb2Error('Auth failed');
+    }
+    const req = new DownloadFileByIdRequest(
+      new URL(this.b2Api.auths.downloadUrl),
+      this.b2Api.auths.authorizationToken,
+      srcFileId,
+    );
+    const res: DownloadFileByIdResponse = await req.send();
+    await fsPromises.writeFile(dstFilePath, res.payload);
   }
 
   private async largeDownload(
@@ -134,6 +137,7 @@ export class DownloadOperation extends Operation {
     //       await progress.writeToFile();
     //       curDownloaded += res.payload.length;
     //       consecutiveAuthFailures = 0;
+    //       consecutiveConnResetErrors = 0;
     //       console.log(`${curDownloaded}/${fileLen} (%${curDownloaded / fileLen})`);
     //     } catch (err: unknown) {
     //       if (err instanceof B2ApiError) {
@@ -162,4 +166,5 @@ export class DownloadOperation extends Operation {
   private bucketName: string | null = null;
   private srcFilePath: string | null = null;
   private dstFilePath: string | null = null;
+  private b2Api: B2Api | null = null;
 }

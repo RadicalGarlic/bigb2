@@ -28,7 +28,12 @@ export class B2ApiError extends Bigb2Error {
   }
 
   public static isB2ApiError(json: string): boolean {
-    const obj = JSON.parse(json);
+    let obj = null;
+    try {
+      obj = JSON.parse(json);
+    } catch (err: unknown) {
+      return false;
+    }
     return ((obj.code)
       && (obj.message)
       && (isNum(obj.status))
