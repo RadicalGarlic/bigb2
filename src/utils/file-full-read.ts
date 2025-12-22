@@ -1,5 +1,7 @@
 import * as fsPromises from 'node:fs/promises';
 
+import { Bigb2Error } from 'bigb2-error';
+
 export async function fullRead(
   file: fsPromises.FileHandle,
   offset: number,
@@ -19,7 +21,7 @@ export async function fullRead(
     bytesRead += read;
   }
   if ((bytesRead !== length) || (bytesRead != buf.length)) {
-    throw new Error(`Full read length mismatch ${bytesRead} ${length} ${buf.length}`);
+    throw new Bigb2Error(`Full read length mismatch. bytesRead=${bytesRead}, length=${length}, buf.length=${buf.length}`);
   }
   return buf;
 }

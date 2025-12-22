@@ -81,77 +81,77 @@ export class DownloadOperation extends Operation {
   }
 
   private async largeDownload(srcFile: File, dstFilePath: string) {
-    let progress = new DownloadProgress({
-      absoluteFilePath: path.resolve(dstFilePath),
-      chunks: []
-    });
-    let curDownloaded = 0;
-    if (await filePathExists(dstFilePath)) {
-      progress = await DownloadProgress.fromJsonFile(dstFilePath);
-      curDownloaded = await progress.syncPartiallyDownloadedFile();
-      console.log(`curDownloaded=${curDownloaded}`);
-    }
-    const dstFile: fsPromises.FileHandle = await fsPromises.open(
-      dstFilePath,
-      'a'
-    );
-    try {
-      let consecutiveAuthFailures = 0;
-      let consecutiveConnResetErrors = 0;
-      while (curDownloaded < fileLen) {
-        try {
-          if (consecutiveAuthFailures >= 3) {
-            throw new Bigb2Error(`Max (${consecutiveAuthFailures}) consecutive auth failures reached. Aborting.`);
-          }
-          if (consecutiveConnResetErrors >= 3) {
-            throw new Bigb2Error(`Max (${consecutiveConnResetErrors}) consecutive connection reset errors reached. Aborting.`);
-          }
-          if (consecutiveAuthFailures > 0) {
-            console.log(`Auth expired, re-authing`)
-            const auths: AuthorizeResult = await authorize();
-            downloadUrl = new URL(auths.downloadUrl);
-            authToken = auths.authorizationToken;
-          }
+    // let progress = new DownloadProgress({
+    //   absoluteFilePath: path.resolve(dstFilePath),
+    //   chunks: []
+    // });
+    // let curDownloaded = 0;
+    // if (await filePathExists(dstFilePath)) {
+    //   progress = await DownloadProgress.fromJsonFile(dstFilePath);
+    //   curDownloaded = await progress.syncPartiallyDownloadedFile();
+    //   console.log(`curDownloaded=${curDownloaded}`);
+    // }
+    // const dstFile: fsPromises.FileHandle = await fsPromises.open(
+    //   dstFilePath,
+    //   'a'
+    // );
+    // try {
+    //   let consecutiveAuthFailures = 0;
+    //   let consecutiveConnResetErrors = 0;
+    //   while (curDownloaded < fileLen) {
+    //     try {
+    //       if (consecutiveAuthFailures >= 3) {
+    //         throw new Bigb2Error(`Max (${consecutiveAuthFailures}) consecutive auth failures reached. Aborting.`);
+    //       }
+    //       if (consecutiveConnResetErrors >= 3) {
+    //         throw new Bigb2Error(`Max (${consecutiveConnResetErrors}) consecutive connection reset errors reached. Aborting.`);
+    //       }
+    //       if (consecutiveAuthFailures > 0) {
+    //         console.log(`Auth expired, re-authing`)
+    //         const auths: AuthorizeResult = await authorize();
+    //         downloadUrl = new URL(auths.downloadUrl);
+    //         authToken = auths.authorizationToken;
+    //       }
 
-          const req = new DownloadFileByIdRequest(
-            downloadUrl,
-            authToken,
-            fileId,
-            new ByteRange(
-              curDownloaded,
-              Math.min(curDownloaded + chunkSize - 1, fileLen)
-            )
-          );
-          const res: DownloadFileByIdResponseType = await req.send();
-          await dstFile.appendFile(res.payload);
-          progress.recordChunk(curDownloaded, res.payload);
-          await progress.writeToFile();
-          curDownloaded += res.payload.length;
-          consecutiveAuthFailures = 0;
-          consecutiveConnResetErrors = 0;
-          console.log(`${curDownloaded}/${fileLen} (%${curDownloaded / fileLen})`);
-        } catch (err: unknown) {
-          if (err instanceof B2ApiError) {
-            if ((err as B2ApiError).isExpiredAuthError()) {
-              consecutiveAuthFailures += 1;
-              continue;
-            }
-            throw err;
-          } else if ((err as NodeJS.ErrnoException)?.code === 'ECONNRESET') {
-            consecutiveConnResetErrors += 1;
-            console.log(`Connection reset error (${consecutiveConnResetErrors}). Retrying.`);
-            continue;
-          }
-          throw err;
-        }
-      }
-      await fsPromises.rm(
-        DownloadProgress.DEFAULT_PROGRESS_FILE_NAME,
-        { force: true }
-      );
-    } finally {
-      await dstFile.close();
-    }
+    //       const req = new DownloadFileByIdRequest(
+    //         downloadUrl,
+    //         authToken,
+    //         fileId,
+    //         new ByteRange(
+    //           curDownloaded,
+    //           Math.min(curDownloaded + chunkSize - 1, fileLen)
+    //         )
+    //       );
+    //       const res: DownloadFileByIdResponseType = await req.send();
+    //       await dstFile.appendFile(res.payload);
+    //       progress.recordChunk(curDownloaded, res.payload);
+    //       await progress.writeToFile();
+    //       curDownloaded += res.payload.length;
+    //       consecutiveAuthFailures = 0;
+    //       consecutiveConnResetErrors = 0;
+    //       console.log(`${curDownloaded}/${fileLen} (%${curDownloaded / fileLen})`);
+    //     } catch (err: unknown) {
+    //       if (err instanceof B2ApiError) {
+    //         if ((err as B2ApiError).isExpiredAuthError()) {
+    //           consecutiveAuthFailures += 1;
+    //           continue;
+    //         }
+    //         throw err;
+    //       } else if ((err as NodeJS.ErrnoException)?.code === 'ECONNRESET') {
+    //         consecutiveConnResetErrors += 1;
+    //         console.log(`Connection reset error (${consecutiveConnResetErrors}). Retrying.`);
+    //         continue;
+    //       }
+    //       throw err;
+    //     }
+    //   }
+    //   await fsPromises.rm(
+    //     DownloadProgress.DEFAULT_PROGRESS_FILE_NAME,
+    //     { force: true }
+    //   );
+    // } finally {
+    //   await dstFile.close();
+    // }
   }
 
   private bucketName: string | null = null;

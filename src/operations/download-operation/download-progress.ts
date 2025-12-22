@@ -1,13 +1,8 @@
 import * as fsPromises from 'node:fs/promises';
-import * as crypto from 'node:crypto';
 import * as path from 'node:path';
 
-import * as t from 'io-ts';
-import { PathReporter } from 'io-ts/PathReporter';
-import { isLeft } from 'fp-ts/lib/Either';
-
-import { fullRead } from '../../utils/file-full-read';
-import { sha1Hex } from '../../utils/hasher';
+import { fullRead } from 'utils/file-full-read';
+import { hash } from 'utils/hasher';
 import { filePathExists } from '../../utils/file-path-exists';
 
 export interface DownloadProgressChunk {
@@ -22,50 +17,46 @@ export interface DownloadProgressChunks {
 }
 
 export class DownloadProgress {
-  constructor(public chunks: DownloadProgressChunks) { }
+  constructor(public chunks: DownloadProgressChunks, public progressFilePath: string) { }
 
-  static async fromJsonFile(
+  public static async initFromFiles(
     downloadFilePath: string,
-    jsonFilePath?: string
+    downloadProgressFilePath?: string
   ): Promise<DownloadProgress> {
-    jsonFilePath = jsonFilePath ?? DownloadProgress.DEFAULT_PROGRESS_FILE_NAME;
-    if (!jsonFilePath || !filePathExists(jsonFilePath)) {
-      return new DownloadProgress({
-        absoluteFilePath: path.resolve(downloadFilePath),
-        chunks: []
-      });
+    downloadProgressFilePath = downloadProgressFilePath ?? `.${downloadProgressFilePath}.download-progress.json`;
+    if (!downloadProgressFilePath || !filePathExists(downloadProgressFilePath)) {
+      return new DownloadProgress(
+        {
+          absoluteFilePath: path.resolve(downloadFilePath),
+          chunks: []
+        },
+        downloadProgressFilePath,
+      );
     }
-    const json: string = await fsPromises.readFile(
-      jsonFilePath ?? DownloadProgress.DEFAULT_PROGRESS_FILE_NAME,
+    const downloadProgressChunksJson: string = await fsPromises.readFile(
+      downloadProgressFilePath,
       { encoding: 'utf-8' }
     );
-
-    const decoded = DownloadChunks.decode(JSON.parse(json));
-    if (isLeft(decoded)) {
-      throw new Error(`Could not validate data: ${PathReporter.report(decoded).join('\n')}`);
-    }
-
-    return new DownloadProgress(decoded.right);
+    return new DownloadProgress(JSON.parse(downloadProgressChunksJson), downloadProgressFilePath);
   }
 
-  async writeToFile(filePath?: string) {
+  public async writeToFile(filePath?: string) {
     await fsPromises.writeFile(
-      filePath ?? DownloadProgress.DEFAULT_PROGRESS_FILE_NAME,
+      filePath ?? this.progressFilePath,
       JSON.stringify(this.chunks)
     );
   }
 
-  recordChunk(startByte: number, chunk: Buffer) {
+  public recordChunk(startByte: number, chunk: Buffer) {
     this.chunks.chunks.push({
       startByte,
       length: chunk.length,
-      hash: sha1Hex(chunk)
+      hash: hash(chunk, 'sha1').toString('hex'),
     });
   }
 
-  async syncPartiallyDownloadedFile(): Promise<number> {
+  public async syncPartiallyDownloadedFile(): Promise<number> {
     if (this.chunks.chunks.length <= 0) {
-      console.log('syncPartiallyDownloadedFile no chunks');
       return 0;
     }
     let curVerified = 0;
@@ -76,12 +67,11 @@ export class DownloadProgress {
     try {
       const partialDownloadFileLen = (await partialDownloadFile.stat()).size;
       for (let chunkIdx = 0; chunkIdx < this.chunks.chunks.length; chunkIdx++) {
-        const curChunk: DownloadChunkType = this.chunks.chunks[chunkIdx];
+        const curChunk: DownloadProgressChunk = this.chunks.chunks[chunkIdx];
         if (
           ((curChunk.startByte + curChunk.length) > partialDownloadFileLen)
           || (curChunk.startByte != curVerified)
         ) {
-          console.log('syncPartiallyDownloadedFile reached end of chunks');
           this.chunks.chunks = this.chunks.chunks.slice(0, chunkIdx);
           await partialDownloadFile.truncate(curVerified);
           return curVerified;
@@ -91,10 +81,8 @@ export class DownloadProgress {
           curChunk.startByte,
           curChunk.length
         );
-        const hash: string = sha1Hex(buf);
-        console.log(`hash=${hash}`);
-        if (hash !== curChunk.hash) {
-          console.log(`syncPartiallyDownloadedFile mismatch hash, curVerified=${curVerified}`);
+        const testHash: string = hash(buf, 'sha1').toString('hex');
+        if (testHash !== curChunk.hash) {
           this.chunks.chunks = this.chunks.chunks.slice(0, chunkIdx);
           await partialDownloadFile.truncate(curVerified);
           return curVerified;
