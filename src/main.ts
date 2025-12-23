@@ -31,3 +31,5 @@ async function main(): Promise<void> {
 main()
   .then(() => {})
   .catch((err: unknown) => { throw err; });
+
+// TODO: bigint (ok for now as max num is like 9000 TB)
