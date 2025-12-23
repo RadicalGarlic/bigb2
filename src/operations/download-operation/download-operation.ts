@@ -14,6 +14,7 @@ import { Operation } from 'operations/operation';
 import { UsageError } from 'operations/usage-error';
 import { DownloadProgress } from './download-progress';
 import { B2ApiError } from 'b2-api/b2-api-error';
+import { filePathExists, getFileLength } from 'utils/files';
 
 export class DownloadOperation extends Operation {
   public parseCliArgs(cliArgs: string[]): void {
@@ -45,7 +46,6 @@ export class DownloadOperation extends Operation {
     if (!this.dstFilePath) {
       throw new UsageError('Failed to find destination file path for download');
     }
-    console.log(`Downloading file "${this.srcFilePath}" from bucket "${this.bucketName}" to "${this.dstFilePath}"`);
 
     this.b2Api = await B2Api.fromKeyFile();
     if (!this.b2Api.auths) {
@@ -53,6 +53,13 @@ export class DownloadOperation extends Operation {
     }
     const bucket: Bucket = await getBucketByName(this.b2Api, this.bucketName);
     const file: File = await getFileByPath(this.b2Api, bucket.bucketId, this.srcFilePath);
+    if (await filePathExists(this.dstFilePath)) {
+      if (file.contentLength === await getFileLength(this.dstFilePath)) {
+        console.log(`Found existing file "${this.dstFilePath}" with same length as source file. Refusing to download.`);
+        return 0;
+      }
+    }
+    console.log(`Downloading file "${this.srcFilePath}" from bucket "${this.bucketName}" to "${this.dstFilePath}"`);
     if (file.contentLength <= this.b2Api.auths.recommendedPartSize) {
       this.smallDownload(file.fileId, this.dstFilePath);
     } else {

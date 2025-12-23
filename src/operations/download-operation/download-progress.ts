@@ -1,9 +1,8 @@
 import * as fsPromises from 'node:fs/promises';
 import * as path from 'node:path';
 
-import { fullRead } from 'utils/file-full-read';
 import { hash } from 'utils/hasher';
-import { filePathExists } from '../../utils/file-path-exists';
+import { filePathExists, fileFullRead } from 'utils/files';
 import { Bigb2Error } from 'bigb2-error';
 
 export interface DownloadProgressChunk {
@@ -99,7 +98,7 @@ export class DownloadProgress {
           await partiallyDownloadedFile.truncate(curVerified);
           return curVerified;
         }
-        const buf: Buffer = await fullRead(
+        const buf: Buffer = await fileFullRead(
           partiallyDownloadedFile,
           curChunk.startByte,
           curChunk.length
