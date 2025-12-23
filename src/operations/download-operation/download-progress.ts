@@ -67,13 +67,14 @@ export class DownloadProgress {
   }
 
   public async syncPartiallyDownloadedFile(): Promise<number> {
-    if (this.chunks.length <= 0) {
+    if ((this.chunks.length <= 0) || !filePathExists(this.downloadFilePath)) {
+      this.chunks = [];
       return 0;
     }
     let curVerified = 0;
     const partiallyDownloadedFile: fsPromises.FileHandle = await fsPromises.open(
       this.downloadFilePath,
-      'r'
+      'r',
     );
     try {
       const partiallyDownloadedFileLen = (await partiallyDownloadedFile.stat()).size;
