@@ -43,43 +43,6 @@
 //     );
 //   }
 
-//   async downloadFile(bucketName: string, filePath: string, outPath: string) {
-//     const auths: AuthorizeAccountResponse  = await this.getAuth();
-
-//     const bucketsRes: ListBucketsResponse = await new ListBucketsRequest(
-//       auths.apiUrl,
-//       auths.authorizationToken,
-//       auths.accountId
-//     ).send();
-//     const bucket: Bucket | undefined
-//       = bucketsRes.buckets.find((bucket: Bucket) => {
-//         return bucket.name === bucketName;
-//       });
-//     if (!bucket) {
-//       throw new Error(`No bucket found with name ${bucketName}`);
-//     }
-
-//     const filesRes: ListFileNamesResponse = await new ListFileNamesRequest(
-//       auths.apiUrl,
-//       auths.authorizationToken,
-//       bucket.id
-//     ).send();
-//     const file: File | undefined = filesRes.files.find((file: File) => {
-//       return file.fileName === filePath;
-//     });
-//     if (!file) {
-//       throw new Error(
-//         `No file found in bucket ${bucketName} at path ${filePath}`
-//       );
-//     }
-
-//     if (file.contentLength <= auths.recommendedPartSize) {
-//       this.smallDownload(file.fileId, outPath);
-//     } else {
-//       console.log('too big');
-//     }
-//   }
-
 //   async uploadFile(
 //     srcFilePath: string,
 //     bucketName: string,
@@ -129,17 +92,6 @@
 //       this.auths.pipe(first()).subscribe(
 //         (auth: AuthorizeAccountResponse) => { resolve(auth); }
 //       );
-//     });
-//   }
-
-//   private async smallDownload(fileId: string, outPath: string) {
-//     const auth: AuthorizeAccountResponse = await this.getAuth();
-//     new DownloadFileByIdRequest(
-//       auth.downloadUrl,
-//       auth.authorizationToken,
-//       fileId
-//     ).send().then((res: DownloadFileByIdResponse) => {
-//       fs.writeFileSync(outPath, new DataView(res.data));
 //     });
 //   }
 
