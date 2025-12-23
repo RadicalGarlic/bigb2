@@ -29,22 +29,33 @@ export class DownloadProgress {
     downloadProgressFilePath?: string
   ): Promise<DownloadProgress> {
     const downloadAbsFilePath = path.resolve(downloadFilePath)
-    const downloadProgressAbsFilePath = path.resolve(downloadProgressFilePath ?? `.${downloadProgressFilePath}.download-progress.json`);
+    const downloadProgressAbsFilePath = path.resolve(downloadProgressFilePath ?? `.${downloadFilePath}.download-progress.json`);
     if (!filePathExists(downloadProgressAbsFilePath)) {
       return new DownloadProgress(downloadAbsFilePath, downloadProgressAbsFilePath, []);
     }
 
     const downloadProgressFileJson: string = await fsPromises.readFile(
       downloadProgressAbsFilePath,
-      { encoding: 'utf-8' }
+      {
+        encoding: 'utf-8',
+        flag: 'a+',
+      },
     );
-    const downloadProgressFileObj: DownloadProgressFile = JSON.parse(downloadProgressFileJson);
-    if (downloadAbsFilePath !== downloadProgressFileObj.downloadFilePath) {
+    let downloadProgressFileObj: DownloadProgressFile | null = null;
+    try {
+      downloadProgressFileObj = JSON.parse(downloadProgressFileJson);
+    } catch (e: unknown) {
+      if (e instanceof SyntaxError) {
+        return new DownloadProgress(downloadAbsFilePath, downloadProgressAbsFilePath, []);
+      }
+      throw e;
+    }
+    if (downloadAbsFilePath !== downloadProgressFileObj!.downloadFilePath) {
       throw new Bigb2Error(
-        `Mismatch between given downloadFilePath "${downloadAbsFilePath}" and progress file (${downloadProgressAbsFilePath}) downloadFilePath "${downloadProgressFileObj.downloadFilePath}"`
+        `Mismatch between given downloadFilePath "${downloadAbsFilePath}" and progress file (${downloadProgressAbsFilePath}) downloadFilePath "${downloadProgressFileObj!.downloadFilePath}"`
       );
     }
-    return new DownloadProgress(downloadAbsFilePath, downloadProgressAbsFilePath, downloadProgressFileObj.chunks);
+    return new DownloadProgress(downloadAbsFilePath, downloadProgressAbsFilePath, downloadProgressFileObj!.chunks);
   }
 
   public async writeToFile(filePath?: string) {
@@ -74,7 +85,7 @@ export class DownloadProgress {
     let curVerified = 0;
     const partiallyDownloadedFile: fsPromises.FileHandle = await fsPromises.open(
       this.downloadFilePath,
-      'r',
+      'a+',
     );
     try {
       const partiallyDownloadedFileLen = (await partiallyDownloadedFile.stat()).size;
