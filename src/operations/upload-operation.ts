@@ -9,6 +9,11 @@ import { getAllUnfinishedLargeFileParts, getAllUnfinishedLargeFiles, UnfinishedL
 import { Bigb2Error } from "bigb2-error";
 import { hash } from 'utils/hasher';
 
+interface SyncResult {
+  startByte: number;
+  startUploadPartNum: number;
+}
+
 export class UploadOperation extends Operation {
   public parseCliArgs(cliArgs: string[]): void {
     if (cliArgs.length < 5) {
@@ -28,19 +33,30 @@ export class UploadOperation extends Operation {
     console.log(`Uploading file "${this.srcFilePath}" to bucket "${this.dstBucketName}" at path "${this.dstFilePath}"`);
     this.b2Api = await B2Api.fromKeyFile();
     const bucket: Bucket = await getBucketByName(this.b2Api, this.dstBucketName);
-    const startByte = this.syncWithPartiallyUploadedFile(bucket.bucketId);
+    // check if file already present on B2
+    // check if small or large upload
+    // upload
+
 
     return 0;
   }
 
-  private async syncWithPartiallyUploadedFile(bucketId: string): Promise<number> {
+  private async smallUpload(): Promise<void> {
+  }
+
+  private async largeUpload(bucketId: string): Promise<void> {
+    const startByte = this.syncWithPartiallyUploadedFile(bucketId);
+    // check against max part num of 10,000
+  }
+
+  private async syncWithPartiallyUploadedFile(bucketId: string): Promise<SyncResult> {
     const unfinishedUploads: UnfinishedLargeFile[] = await getAllUnfinishedLargeFiles(
       this.b2Api!,
       bucketId,
       this.srcFilePath,
     );
     if (unfinishedUploads.length === 0) {
-      return 0;
+      return { startByte: 0, startUploadPartNum: 0 };
     }
     if (unfinishedUploads.length > 1) {
       throw new Bigb2Error(`Multiple unfinished uploads found for file "${this.srcFilePath}" in bucketId=${bucketId}`);
@@ -56,17 +72,31 @@ export class UploadOperation extends Operation {
     const srcFileHandle = await fsPromises.open(this.srcFilePath, 'r');
     try {
       let bytesVerified = 0;
+      let lastPartNumVerified = 0;
       for (const uploadPart of uploadParts) {
+        if (uploadPart.partNumber !== (lastPartNumVerified + 1)) {
+          return {
+            startByte: bytesVerified,
+            startUploadPartNum: lastPartNumVerified + 1,
+          }
+        }
         const srcFilePartHash: string = hash(
           await fileFullRead(srcFileHandle, bytesVerified, uploadPart.contentLength),
           'sha1'
         ).toString('hex');
         if (srcFilePartHash !== uploadPart.contentSha1) {
-          return bytesVerified;
+          return {
+            startByte: bytesVerified,
+            startUploadPartNum: lastPartNumVerified + 1,
+          }
         }
         bytesVerified += uploadPart.contentLength;
+        lastPartNumVerified = uploadPart.partNumber;
       }
-      return bytesVerified;
+      return {
+        startByte: bytesVerified,
+        startUploadPartNum: lastPartNumVerified + 1,
+      };
     } finally {
       await srcFileHandle.close();
     }
