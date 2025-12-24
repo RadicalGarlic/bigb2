@@ -63,12 +63,15 @@ export async function getAllUnfinishedLargeFileParts(b2Api: B2Api, fileId: strin
     nextPartNum = res.nextPartNumber ?? 0;
     results.push(res.parts);
   } while (nextPartNum)
-  return results.flat().map((value: Part) => {
-    return {
-      fileId: value.fileId,
-      partNumber: value.partNumber,
-      contentLength: value.contentLength,
-      contentSha1: value.contentSha1,
-    };
-  });
+  return results
+    .flat()
+    .sort((a: Part, b: Part) => a.partNumber - b.partNumber)
+    .map((value: Part) => {
+      return {
+        fileId: value.fileId,
+        partNumber: value.partNumber,
+        contentLength: value.contentLength,
+        contentSha1: value.contentSha1,
+      };
+    });
 }

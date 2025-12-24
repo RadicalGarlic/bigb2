@@ -1,13 +1,13 @@
-import { getFileLength } from "utils/files";
+import * as fsPromises from 'node:fs/promises';
+
+import { fileFullRead, getFileLength } from "utils/files";
 import { Operation } from "./operation";
 import { UsageError } from "./usage-error";
 import { B2Api } from "b2-api/b2-api";
 import { Bucket, getBucketByName } from "b2-iface/buckets";
-import { File, getFileByPath } from 'b2-iface/files';
-import { ListUnfinishedLargeFilesRequest, ListUnfinishedLargeFilesResponse } from "b2-api/calls/list-unfinished-large-files";
-import { getAllUnfinishedLargeFiles, UnfinishedLargeFile } from "b2-iface/unfinished-large-files";
-import { union } from "io-ts";
+import { getAllUnfinishedLargeFileParts, getAllUnfinishedLargeFiles, UnfinishedLargeFile, UnfinishedLargeFilePart } from "b2-iface/unfinished-large-files";
 import { Bigb2Error } from "bigb2-error";
+import { hash } from 'utils/hasher';
 
 export class UploadOperation extends Operation {
   public parseCliArgs(cliArgs: string[]): void {
@@ -28,21 +28,7 @@ export class UploadOperation extends Operation {
     console.log(`Uploading file "${this.srcFilePath}" to bucket "${this.dstBucketName}" at path "${this.dstFilePath}"`);
     this.b2Api = await B2Api.fromKeyFile();
     const bucket: Bucket = await getBucketByName(this.b2Api, this.dstBucketName);
-    this.syncWithPartiallyUploadedFile(bucket.bucketId);
-
-
-
-    const srcFileLen = await getFileLength(this.srcFilePath);
-
-
-
-
-
-
-
-
-
-
+    const startByte = this.syncWithPartiallyUploadedFile(bucket.bucketId);
 
     return 0;
   }
@@ -59,14 +45,31 @@ export class UploadOperation extends Operation {
     if (unfinishedUploads.length > 1) {
       throw new Bigb2Error(`Multiple unfinished uploads found for file "${this.srcFilePath}" in bucketId=${bucketId}`);
     }
+    if (unfinishedUploads[0].fileName !== this.dstFilePath) {
+      throw new Bigb2Error(`Name mismatch between unfinished upload (${unfinishedUploads[0].fileName}) and destination file (${this.dstFilePath})`);
+    }
 
-    // list parts
-
-
-
-
-
-    return 0;
+    const uploadParts: UnfinishedLargeFilePart[] = await getAllUnfinishedLargeFileParts(
+      this.b2Api!,
+      unfinishedUploads[0].fileId,
+    );
+    const srcFileHandle = await fsPromises.open(this.srcFilePath, 'r');
+    try {
+      let bytesVerified = 0;
+      for (const uploadPart of uploadParts) {
+        const srcFilePartHash: string = hash(
+          await fileFullRead(srcFileHandle, bytesVerified, uploadPart.contentLength),
+          'sha1'
+        ).toString('hex');
+        if (srcFilePartHash !== uploadPart.contentSha1) {
+          return bytesVerified;
+        }
+        bytesVerified += uploadPart.contentLength;
+      }
+      return bytesVerified;
+    } finally {
+      await srcFileHandle.close();
+    }
   }
 
   private b2Api: B2Api | null = null;
