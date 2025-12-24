@@ -9,6 +9,7 @@ function getUsageMessage(): string {
   return 'Usage: '
     + `${os.EOL}${INDENT}${APP_NAME} list-buckets`
     + `${os.EOL}${INDENT}${APP_NAME} download bucketName:file/path [dstFilePath]`
+    + `${os.EOL}${INDENT}${APP_NAME} upload srcFile bucketName:file/path`;
     // + os.EOL + indent + `bigb2 copy ${CopyOperation.SRC_ARG} someBucket:some/file/path ${CopyOperation.DST_ARG} someOtherBucket:some/other/file/path`;
 }
 
@@ -33,3 +34,7 @@ main()
   .catch((err: unknown) => { throw err; });
 
 // TODO: bigint (ok for now as max num is like 9000 TB)
+// TODO: Fix up UrlProvider
+// TODO: Status code detection on partial download
+// TODO: Error handling hierarchy still needs work
+// TODO: Proper logging
