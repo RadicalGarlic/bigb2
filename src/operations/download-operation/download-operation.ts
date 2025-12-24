@@ -15,6 +15,7 @@ import { UsageError } from 'operations/usage-error';
 import { DownloadProgress } from './download-progress';
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { filePathExists, getFileLength } from 'utils/files';
+import { throwExpression } from 'utils/throw-expression';
 
 export class DownloadOperation extends Operation {
   public parseCliArgs(cliArgs: string[]): void {
@@ -52,7 +53,8 @@ export class DownloadOperation extends Operation {
       throw new Bigb2Error('Failed to auth B2Api');
     }
     const bucket: Bucket = await getBucketByName(this.b2Api, this.bucketName);
-    const file: File = await getFileByPath(this.b2Api, bucket.bucketId, this.srcFilePath);
+    const file: File = (await getFileByPath(this.b2Api, bucket.bucketId, this.srcFilePath))
+      ?? throwExpression(new Bigb2Error(`File "${this.srcFilePath}" in bucket "${this.bucketName}" not found`));
     if (await filePathExists(this.dstFilePath)) {
       if (file.contentLength === await getFileLength(this.dstFilePath)) {
         console.log(`Found existing file "${this.dstFilePath}" with same length as source file. Refusing to download.`);

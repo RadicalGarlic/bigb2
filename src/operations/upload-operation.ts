@@ -8,6 +8,7 @@ import { Bucket, getBucketByName } from "b2-iface/buckets";
 import { getAllUnfinishedLargeFileParts, getAllUnfinishedLargeFiles, UnfinishedLargeFile, UnfinishedLargeFilePart } from "b2-iface/unfinished-large-files";
 import { Bigb2Error } from "bigb2-error";
 import { hash } from 'utils/hasher';
+import { File, getFileByPath } from 'b2-iface/files';
 
 interface SyncResult {
   startByte: number;
@@ -33,7 +34,29 @@ export class UploadOperation extends Operation {
     console.log(`Uploading file "${this.srcFilePath}" to bucket "${this.dstBucketName}" at path "${this.dstFilePath}"`);
     this.b2Api = await B2Api.fromKeyFile();
     const bucket: Bucket = await getBucketByName(this.b2Api, this.dstBucketName);
-    // check if file already present on B2
+    const file: File | null = await getFileByPath(this.b2Api, bucket.bucketId, this.dstFilePath);
+    if (!file) {
+      throw new Bigb2Error(`Found existing file in bucket "${bucket.bucketName}" with path "${this.dstFilePath}". Refusing to upload`);
+    }
+
+    // const uploadParts: SyncResult | null = await this.syncWithPartiallyUploadedFile
+    // if ()
+
+            //       else if (status == 401 /* Unauthorized */ &&
+            //            (response.status_code.equals("expired_auth_token") || response.status_code.equals("bad_auth_token")) {
+            //     // Upload auth token has expired.  Time for a new one.
+            //     urlAndAuthToken = null;
+            // }
+            // else if (status == 408 /* Request Timeout */) {
+            //     // Retry and hope the upload goes faster this time
+            //     exponentialBackOff();
+            // }
+            // else if (status == 429 /* Too Many Requests */) {
+            //     // We are making too many requests
+            //     exponentialBackOff();
+
+
+
     // check if small or large upload
     // upload
 
@@ -49,14 +72,14 @@ export class UploadOperation extends Operation {
     // check against max part num of 10,000
   }
 
-  private async syncWithPartiallyUploadedFile(bucketId: string): Promise<SyncResult> {
+  private async syncWithPartiallyUploadedFile(bucketId: string): Promise<SyncResult | null> {
     const unfinishedUploads: UnfinishedLargeFile[] = await getAllUnfinishedLargeFiles(
       this.b2Api!,
       bucketId,
       this.srcFilePath,
     );
     if (unfinishedUploads.length === 0) {
-      return { startByte: 0, startUploadPartNum: 0 };
+      return null;
     }
     if (unfinishedUploads.length > 1) {
       throw new Bigb2Error(`Multiple unfinished uploads found for file "${this.srcFilePath}" in bucketId=${bucketId}`);

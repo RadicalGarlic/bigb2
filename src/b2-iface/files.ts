@@ -1,6 +1,5 @@
 import { B2Api } from "b2-api/b2-api";
 import { ListFileNamesResponse } from "b2-api/calls/list-file-names";
-import { Bigb2Error } from "bigb2-error";
 
 export interface File {
   accountId: string;
@@ -10,10 +9,10 @@ export interface File {
   contentLength: number;
 }
 
-export async function getFileByPath(b2Api: B2Api, bucketId: string, filePath: string): Promise<File> {
+export async function getFileByPath(b2Api: B2Api, bucketId: string, filePath: string): Promise<File | null> {
   const files: ListFileNamesResponse = await b2Api.listFileNames(bucketId, undefined, filePath);
   if ((files.files.length <= 0) || (files.files[0].fileName !== filePath)) {
-    throw new Bigb2Error(`No files found for filePath=${filePath} in bucketId=${bucketId}. Response=${JSON.stringify(files)}`);
+    return null;
   }
   return {
     accountId: files.files[0].accountId,
