@@ -2,37 +2,33 @@ import * as https from 'node:https';
 import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
-import { Range } from 'b2-iface/range';
 import { B2ApiError } from 'b2-api/b2-api-error';
 
-export interface UnfinishedLargeFile {
-  accountId: string;
-  action: string; // TODO: Restrict to documented values
-  bucketId: string;
+export interface Part {
   fileId: string;
-  fileName: string;
+  partNumber: number;
   contentLength: number;
+  contentSha1: string;
 }
 
-export interface ListUnfinishedLargeFilesResponse {
-  files: UnfinishedLargeFile[];
-  nextFileId: string;
+export interface ListPartsResponse {
+  parts: Part[];
+  nextPartNumber: number;
 }
 
-export class ListUnfinishedLargeFilesRequest {
+export class ListPartsRequest {
   constructor(private args: {
     apiUrl: URL,
     authToken: string,
-    bucketId: string,
-    namePrefix?: string,
-    startFileId?: string,
-    maxFileCount?: number,
+    fileId: string,
+    startPartNumber?: number,
+    maxPartCount?: number,
   }) { }
 
-  async send(): Promise<ListUnfinishedLargeFilesResponse> {
-    return new Promise<ListUnfinishedLargeFilesResponse>(
+  async send(): Promise<ListPartsResponse> {
+    return new Promise<ListPartsResponse>(
       (resolve, reject) => {
-        const url: URL = UrlProvider.listUnfinishedLargeFilesUrl(this.args.apiUrl);
+        const url: URL = UrlProvider.listPartsUrl(this.args.apiUrl);
         const req: http.ClientRequest = https.request(
           url,
           {
@@ -43,12 +39,12 @@ export class ListUnfinishedLargeFilesRequest {
         req.on('response', (res: http.IncomingMessage) => {
           const resChunks: Buffer[] = [];
           res.on('error', (err: Error) => {
-            reject(new B2ApiError('ListUnfinishedLargeFiles error', { cause: err }));
+            reject(new B2ApiError('ListParts error', { cause: err }));
           });
           res.on('data', (chunk: Buffer) => { resChunks.push(chunk); });
           res.on('end', () => {
             if (!res.complete) {
-              return reject(new B2ApiError('ListUnfinishedLargeFiles interrupted'));
+              return reject(new B2ApiError('ListParts interrupted'));
             }
             const resBodyJson: string = Buffer.concat(resChunks).toString('utf-8');
             const resBodyObj = JSON.parse(resBodyJson);
@@ -57,22 +53,20 @@ export class ListUnfinishedLargeFilesRequest {
             }
             try {
               return resolve({
-                files: resBodyObj!.files!.map((value: any) => {
+                parts: resBodyObj!.files!.map((value: any) => {
                   return {
-                    accountId: value!.accountId,
-                    action: value!.action,
-                    bucketId: value!.bucketId,
                     fileId: value!.fileId,
-                    fileName: value!.fileName,
+                    partNumber: value!.partNumber,
                     contentLength: value!.contentLength,
+                    contentSha1: value!.contentSha1,
                   }
                 }),
-                nextFileId: resBodyObj!.nextFileId,
+                nextPartNumber: resBodyObj!.nextPartNumber,
               });
             } catch (err: unknown) {
               if (err instanceof Error) {
                 return reject(new B2ApiError(
-                  `Failed to parse ListUnfinishedLargeFilesResponse. JSON=${resBodyJson}`,
+                  `Failed to parse ListParts. JSON=${resBodyJson}`,
                   { cause: err }
                 ));
               }

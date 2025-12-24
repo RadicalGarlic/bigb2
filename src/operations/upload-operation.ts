@@ -3,6 +3,11 @@ import { Operation } from "./operation";
 import { UsageError } from "./usage-error";
 import { B2Api } from "b2-api/b2-api";
 import { Bucket, getBucketByName } from "b2-iface/buckets";
+import { File, getFileByPath } from 'b2-iface/files';
+import { ListUnfinishedLargeFilesRequest, ListUnfinishedLargeFilesResponse } from "b2-api/calls/list-unfinished-large-files";
+import { getAllUnfinishedLargeFiles, UnfinishedLargeFile } from "b2-iface/unfinished-large-files";
+import { union } from "io-ts";
+import { Bigb2Error } from "bigb2-error";
 
 export class UploadOperation extends Operation {
   public parseCliArgs(cliArgs: string[]): void {
@@ -21,10 +26,11 @@ export class UploadOperation extends Operation {
 
   public async run(): Promise<number> {
     console.log(`Uploading file "${this.srcFilePath}" to bucket "${this.dstBucketName}" at path "${this.dstFilePath}"`);
-
     this.b2Api = await B2Api.fromKeyFile();
     const bucket: Bucket = await getBucketByName(this.b2Api, this.dstBucketName);
-    // check for existing large file
+    this.syncWithPartiallyUploadedFile(bucket.bucketId);
+
+
 
     const srcFileLen = await getFileLength(this.srcFilePath);
 
@@ -33,6 +39,28 @@ export class UploadOperation extends Operation {
 
 
 
+
+
+
+
+
+    return 0;
+  }
+
+  private async syncWithPartiallyUploadedFile(bucketId: string): Promise<number> {
+    const unfinishedUploads: UnfinishedLargeFile[] = await getAllUnfinishedLargeFiles(
+      this.b2Api!,
+      bucketId,
+      this.srcFilePath,
+    );
+    if (unfinishedUploads.length === 0) {
+      return 0;
+    }
+    if (unfinishedUploads.length > 1) {
+      throw new Bigb2Error(`Multiple unfinished uploads found for file "${this.srcFilePath}" in bucketId=${bucketId}`);
+    }
+
+    // list parts
 
 
 
