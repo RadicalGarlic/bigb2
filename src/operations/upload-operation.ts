@@ -5,14 +5,28 @@ import { Operation } from "./operation";
 import { UsageError } from "./usage-error";
 import { B2Api } from "b2-api/b2-api";
 import { Bucket, getBucketByName } from "b2-iface/buckets";
-import { getAllUnfinishedLargeFileParts, getAllUnfinishedLargeFiles, UnfinishedLargeFile, UnfinishedLargeFilePart } from "b2-iface/unfinished-large-files";
+import {
+  getAllUnfinishedLargeFileParts,
+  getAllUnfinishedLargeFiles,
+  UnfinishedLargeFile,
+  UnfinishedLargeFilePart
+} from "b2-iface/unfinished-large-files";
 import { Bigb2Error } from "bigb2-error";
 import { hash } from 'utils/hasher';
 import { File, getFileByPath } from 'b2-iface/files';
+import { MAX_UPLOAD_PARTS } from 'b2-api/calls/upload-part';
+import { StartLargeFileRequest, StartLargeFileResponse } from 'b2-api/calls/start-large-file';
 
-interface SyncResult {
-  startByte: number;
-  startUploadPartNum: number;
+interface UploadPart {
+  partNum: number,
+  contentLength: number,
+  contentSha1: string,
+}
+
+interface UploadProgress {
+  fileId: string;
+  bytesUploaded: number;
+  parts: UploadPart[];
 }
 
 export class UploadOperation extends Operation {
@@ -35,9 +49,18 @@ export class UploadOperation extends Operation {
     this.b2Api = await B2Api.fromKeyFile();
     const bucket: Bucket = await getBucketByName(this.b2Api, this.dstBucketName);
     const file: File | null = await getFileByPath(this.b2Api, bucket.bucketId, this.dstFilePath);
-    if (!file) {
+    if (file) {
       throw new Bigb2Error(`Found existing file in bucket "${bucket.bucketName}" with path "${this.dstFilePath}". Refusing to upload`);
     }
+
+    const uploadProgress: UploadProgress | null = await this.getUploadProgress(bucket.bucketId);
+    const srcFileLen: number = await getFileLength(this.srcFilePath);
+    if (uploadProgress || (srcFileLen > this.b2Api.auths!.recommendedPartSize)) {
+      await this.largeUpload(bucket.bucketId, uploadProgress ?? undefined);
+    } else {
+      await this.smallUpload();
+    }
+
 
     // const uploadParts: SyncResult | null = await this.syncWithPartiallyUploadedFile
     // if ()
@@ -57,8 +80,6 @@ export class UploadOperation extends Operation {
 
 
 
-    // check if small or large upload
-    // upload
 
 
     return 0;
@@ -67,12 +88,39 @@ export class UploadOperation extends Operation {
   private async smallUpload(): Promise<void> {
   }
 
-  private async largeUpload(bucketId: string): Promise<void> {
-    const startByte = this.syncWithPartiallyUploadedFile(bucketId);
+  private async largeUpload(bucketId: string, uploadProgress?: UploadProgress): Promise<void> {
+    let bytesUploaded = 0;
+    let partSha1s: string[] = [];
+    if (uploadProgress) {
+      bytesUploaded = uploadProgress.bytesUploaded;
+      partSha1s = uploadProgress.parts.map((value: UploadPart) => value.contentSha1);
+    }
+    if (partSha1s.length >= MAX_UPLOAD_PARTS) {
+      throw new Bigb2Error(`${MAX_UPLOAD_PARTS} or more upload parts already uploaded. Max is ${MAX_UPLOAD_PARTS} per the docs. Aborting.`);
+    }
+    const bytesRemaining = (await getFileLength(this.srcFilePath)) - bytesUploaded;
+    const numPartsRemaining = MAX_UPLOAD_PARTS - (uploadProgress?.parts.length ?? 0);
+    const uploadPartSize = Math.max(this.b2Api!.auths!.recommendedPartSize, Math.ceil(bytesRemaining / numPartsRemaining));
+
+    let fileId: string = '';
+    if (uploadProgress) {
+      fileId = uploadProgress.fileId;
+    } else {
+      const req = new StartLargeFileRequest({
+        apiUrl: new URL(this.b2Api!.auths!.apiUrl),
+        authToken: this.b2Api!.auths!.authorizationToken,
+        bucketId: bucketId,
+        dstFilePath: this.dstFilePath,
+      });
+      const res: StartLargeFileResponse = await req.send();
+      fileId = res.fileId;
+    }
+
     // check against max part num of 10,000
+    // large upload must keep all part hashes
   }
 
-  private async syncWithPartiallyUploadedFile(bucketId: string): Promise<SyncResult | null> {
+  private async getUploadProgress(bucketId: string): Promise<UploadProgress | null> {
     const unfinishedUploads: UnfinishedLargeFile[] = await getAllUnfinishedLargeFiles(
       this.b2Api!,
       bucketId,
@@ -96,11 +144,13 @@ export class UploadOperation extends Operation {
     try {
       let bytesVerified = 0;
       let lastPartNumVerified = 0;
+      const verifiedUploadParts: UploadPart[] = [];
       for (const uploadPart of uploadParts) {
         if (uploadPart.partNumber !== (lastPartNumVerified + 1)) {
           return {
-            startByte: bytesVerified,
-            startUploadPartNum: lastPartNumVerified + 1,
+            fileId: unfinishedUploads[0].fileId,
+            bytesUploaded: bytesVerified,
+            parts: verifiedUploadParts,
           }
         }
         const srcFilePartHash: string = hash(
@@ -109,16 +159,23 @@ export class UploadOperation extends Operation {
         ).toString('hex');
         if (srcFilePartHash !== uploadPart.contentSha1) {
           return {
-            startByte: bytesVerified,
-            startUploadPartNum: lastPartNumVerified + 1,
+            fileId: unfinishedUploads[0].fileId,
+            bytesUploaded: bytesVerified,
+            parts: verifiedUploadParts,
           }
         }
         bytesVerified += uploadPart.contentLength;
         lastPartNumVerified = uploadPart.partNumber;
+        verifiedUploadParts.push({
+          partNum: uploadPart.partNumber,
+          contentLength: uploadPart.contentLength,
+          contentSha1: uploadPart.contentSha1,
+        });
       }
       return {
-        startByte: bytesVerified,
-        startUploadPartNum: lastPartNumVerified + 1,
+        fileId: unfinishedUploads[0].fileId,
+        bytesUploaded: bytesVerified,
+        parts: verifiedUploadParts,
       };
     } finally {
       await srcFileHandle.close();
