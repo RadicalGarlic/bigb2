@@ -36,6 +36,8 @@ main()
 // TODO: bigint (ok for now as max num is like 9000 TB)
 // TODO: Fix up UrlProvider
 // TODO: Status code detection on partial download
-// TODO: Error handling hierarchy still needs work
+// TODO: Error handling hierarchy still needs work.
+  // B2ApiError.fromJson
 // TODO: Proper logging
 // TODO: http.ClientRequest DOES have an error handler. Put those back in
+// Make B2 API calls more reusable
