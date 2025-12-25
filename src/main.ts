@@ -38,3 +38,4 @@ main()
 // TODO: Status code detection on partial download
 // TODO: Error handling hierarchy still needs work
 // TODO: Proper logging
+// TODO: http.ClientRequest DOES have an error handler. Put those back in
