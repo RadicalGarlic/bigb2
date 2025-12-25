@@ -59,9 +59,16 @@ export class UrlProvider {
     );
   }
 
-  static getUploadUrlUrl(apiUrl: URL): URL {
+  static getUploadUrl(apiUrl: URL): URL {
     return new URL(
       path.join(UrlProvider.B2API, UrlProvider.VERSION, 'b2_get_upload_url'),
+      apiUrl
+    );
+  }
+
+  static getUploadPartUrl(apiUrl: URL): URL {
+    return new URL(
+      path.join(UrlProvider.B2API, UrlProvider.VERSION, 'b2_get_upload_part_url'),
       apiUrl
     );
   }
