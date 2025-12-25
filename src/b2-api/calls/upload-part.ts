@@ -3,6 +3,8 @@ import * as http from 'node:http';
 
 import { B2ApiError } from 'b2-api/b2-api-error';
 
+export const MAX_UPLOAD_PARTS = 10000;
+
 export interface UploadPartResponse {
   fileId: string;
   partNumber: number;
