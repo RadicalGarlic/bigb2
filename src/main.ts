@@ -40,4 +40,5 @@ main()
   // B2ApiError.fromJson
 // TODO: Proper logging
 // TODO: http.ClientRequest DOES have an error handler. Put those back in
-// Make B2 API calls more reusable
+// TODO: Make B2 API calls more reusable
+// TODO: exclamation points don't work like how you think
