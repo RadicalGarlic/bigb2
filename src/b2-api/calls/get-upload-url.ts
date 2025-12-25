@@ -19,7 +19,7 @@ export class GetUploadUrlRequest {
   async send(): Promise<GetUploadUrlResponse> {
     return new Promise<GetUploadUrlResponse>((resolve, reject) => {
       const req: http.ClientRequest = https.get(
-        UrlProvider.getUploadUrlUrl(this.args.apiUrl),
+        UrlProvider.getUploadUrl(this.args.apiUrl),
         {
           headers: { Authorization: this.args.authToken }
         },

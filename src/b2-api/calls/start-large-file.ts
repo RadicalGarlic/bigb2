@@ -36,6 +36,9 @@ export class StartLargeFileRequest {
           res.on('error', (err: Error) => { reject(new B2ApiError('StartLargeFile failed', { cause: err })); });
           res.on('data', (chunk: Buffer) => { resChunks.push(chunk); });
           res.on('end', () => {
+            if (!res.complete) {
+              return reject(new B2ApiError('StartLargeFile interrupted'));
+            }
             const resBodyJson: string = Buffer.concat(resChunks).toString('utf-8');
             const resBodyObj = JSON.parse(resBodyJson);
             if (res.statusCode !== 200 || B2ApiError.isB2ApiError(resBodyJson)) {
