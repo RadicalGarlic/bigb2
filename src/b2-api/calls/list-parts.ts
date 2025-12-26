@@ -3,7 +3,7 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/type-check';
+import { assertPrimitiveField } from 'utils/assert-primitive-field';
 
 export interface Part {
   fileId: string;
