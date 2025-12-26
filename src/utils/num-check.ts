@@ -5,9 +5,18 @@ export function isNum(s: string | null | undefined): boolean {
   return !isNaN(parseInt(s));
 }
 
-export function assertNum(s: string | null | undefined, err: Error): number {
-  if (!isNum(s)) {
+export function assertNum(a: any, err: Error): number {
+  if ((a === null) || (a === undefined)) {
     throw err;
   }
-  return parseInt(s!);
+
+  if ((typeof a) === 'string') {
+    const test = parseInt(a);
+    if (isNaN(test)) {
+      throw err;
+    }
+    return test;
+  }
+
+  throw err;
 }
