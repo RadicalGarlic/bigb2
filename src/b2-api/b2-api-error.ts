@@ -20,9 +20,9 @@ export class B2ApiError extends Bigb2Error {
       "B2 API error",
       undefined,
       {
-        code: obj.code ?? throwExpression(new Bigb2Error(`Malformed B2ApiError, missing "code", json=${json}`)),
-        message: obj.message ?? throwExpression(new Bigb2Error(`Malformed B2ApiError, missing "message", json=${json}`)),
-        status: isNum(obj.status) ? parseInt(obj.status) : throwExpression(new Bigb2Error(`Malformed B2ApiError, bad "status", json=${json}`)),
+        code: obj.code ?? throwExpression(new Bigb2Error(`Missing "code" from B2ApiError. JSON=${json}`)),
+        message: obj.message ?? throwExpression(new Bigb2Error(`Missing "message" from B2ApiError. JSON=${json}`)),
+        status: isNum(obj.status) ? parseInt(obj.status) : throwExpression(new Bigb2Error(`Missing "status" from B2ApiError. JSON=${json}`)),
       },
     )
   }
@@ -41,6 +41,10 @@ export class B2ApiError extends Bigb2Error {
   }
 
   public isExpiredAuthError(): boolean {
-    return this.b2ApiErrorBody?.code === 'expired_auth_error';
+    return (this.b2ApiErrorBody?.status === 401) && (this.b2ApiErrorBody?.code === 'expired_auth_token');
+  }
+
+  public isServiceUnavailableError503(): boolean {
+    return (this.b2ApiErrorBody?.status === 503) && (this.b2ApiErrorBody?.code === 'service_unavailable');
   }
 }
