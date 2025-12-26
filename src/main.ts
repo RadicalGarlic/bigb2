@@ -15,7 +15,7 @@ function getUsageMessage(): string {
 
 async function main(): Promise<void> {
   try {
-    const operation = await OperationFactory.get(process.argv);
+    const operation = OperationFactory.get(process.argv);
     operation.parseCliArgs(process.argv);
     process.exitCode = await operation.run();
   } catch (err: unknown) {
