@@ -52,3 +52,15 @@ export async function getFileLength(filePath: string): Promise<number> {
     }
   }
 }
+
+export class ScopedFileHandle implements AsyncDisposable {
+  public constructor(public fileHandle: fsPromises.FileHandle) { }
+
+  public static async fromPath(path: string): Promise<ScopedFileHandle> {
+    return new ScopedFileHandle(await fsPromises.open(path, 'r'));
+  }
+
+  public async [Symbol.asyncDispose]() {
+    await this.fileHandle.close();
+  }
+}
