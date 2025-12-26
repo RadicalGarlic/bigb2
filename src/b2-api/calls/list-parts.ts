@@ -3,7 +3,7 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { assertPrimitiveField } from 'utils/type-check';
 
 export interface Part {
   fileId: string;
@@ -49,8 +49,8 @@ export class ListPartsRequest {
             }
             const resBodyJson: string = Buffer.concat(resChunks).toString('utf-8');
             const resBodyObj = JSON.parse(resBodyJson);
-            if (B2ApiError.isB2ApiError(resBodyJson) || res.statusCode !== 200) {
-              return reject(B2ApiError.fromJson(resBodyJson));
+            if (res.statusCode !== 200 || B2ApiError.isB2ApiError(resBodyObj)) {
+              return reject(B2ApiError.fromObj(resBodyObj, 'ListParts error'));
             }
             try {
               return resolve({
@@ -74,6 +74,9 @@ export class ListPartsRequest {
               return reject(err);
             }
           });
+        });
+        req.on('error', (err: Error) => {
+          return reject(new B2ApiError('ListParts error', { cause: err }));
         });
         req.end();
       }

@@ -1,5 +1,5 @@
 import { Bigb2Error } from "bigb2-error";
-import { throwExpression } from "utils/throw-expression";
+import { assertPrimitiveField } from "utils/assert-primitive-field";
 import { isNum } from "utils/num-check";
 
 export interface B2ApiErrorBody {
@@ -10,34 +10,60 @@ export interface B2ApiErrorBody {
 
 export class B2ApiError extends Bigb2Error {
   constructor(message: string, options?: { cause: Error }, public readonly b2ApiErrorBody?: B2ApiErrorBody, ) {
-    const fullMsg = [message, `B2ApiErrorBody=${JSON.stringify(b2ApiErrorBody)}`].filter((value: string) => value).join(' ');
+    const fullMsg = [
+      message,
+      b2ApiErrorBody ? `B2ApiErrorBody=${JSON.stringify(b2ApiErrorBody)}` : ''
+    ].filter((s: string) => s).join(' ');
     super(fullMsg, options);
   }
 
-  public static fromJson(json: string): B2ApiError {
-    const obj = JSON.parse(json);
-    return new B2ApiError(
-      "B2 API error",
-      undefined,
-      {
-        code: obj.code ?? throwExpression(new Bigb2Error(`Missing "code" from B2ApiError. JSON=${json}`)),
-        message: obj.message ?? throwExpression(new Bigb2Error(`Missing "message" from B2ApiError. JSON=${json}`)),
-        status: isNum(obj.status) ? parseInt(obj.status) : throwExpression(new Bigb2Error(`Missing "status" from B2ApiError. JSON=${json}`)),
-      },
-    )
+  public static fromObj(errBody: object, message?: string): B2ApiError {
+    try {
+      return new B2ApiError(
+        message ? message : 'B2 API error',
+        undefined,
+        {
+          code: String(assertPrimitiveField(errBody, 'code', 'string')),
+          message: String(assertPrimitiveField(errBody, 'message', 'string')),
+          status: Number(assertPrimitiveField(errBody, 'status', 'number')),
+        },
+      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new Bigb2Error(`Failed to parse B2ApiError body ${JSON.stringify(errBody)}`, { cause: err });
+      }
+      throw err;
+    }
   }
 
-  public static isB2ApiError(json: string): boolean {
-    let obj = null;
+  public static fromJson(json: string, message?: string): B2ApiError {
     try {
-      obj = JSON.parse(json);
+      return B2ApiError.fromObj(JSON.parse(json));
     } catch (err: unknown) {
-      return false;
+      if (err instanceof Error) {
+        throw new Bigb2Error(`Failed to parse B2ApiError body ${json}`, { cause: err });
+      }
+      throw err;
     }
-    return ((obj.code)
-      && (obj.message)
-      && (isNum(obj.status))
-    );
+  }
+
+  public static isB2ApiError(test: any): boolean {
+    let obj = null;
+    if ((typeof test) === 'string') {
+      try {
+        obj = JSON.parse(test);
+      } catch (err: unknown) {
+        return false;
+      }
+    } else if ((typeof test) === 'object') {
+      obj = test;
+    } else {
+      throw new Bigb2Error(`Unexpected type for B2ApiError ${test}`);
+    }
+
+    return obj.code
+      && obj.message
+      && isNum(obj.status);
   }
 
   public isExpiredAuthError(): boolean {
