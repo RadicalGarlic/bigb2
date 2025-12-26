@@ -3,6 +3,7 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
+import { assertPrimitiveField } from 'utils/assert-primitive-field';
 
 export interface Part {
   fileId: string;
@@ -55,13 +56,13 @@ export class ListPartsRequest {
               return resolve({
                 parts: resBodyObj!.files!.map((value: any) => {
                   return {
-                    fileId: value!.fileId,
-                    partNumber: value!.partNumber,
-                    contentLength: value!.contentLength,
-                    contentSha1: value!.contentSha1,
+                    fileId: String(assertPrimitiveField(value, 'fileId', 'string')),
+                    partNumber: String(assertPrimitiveField(value, 'partNumber', 'string')),
+                    contentLength: String(assertPrimitiveField(value, 'contentLength', 'string')),
+                    contentSha1: String(assertPrimitiveField(value, 'contentSha1', 'string')),
                   }
                 }),
-                nextPartNumber: resBodyObj!.nextPartNumber,
+                nextPartNumber: Number(assertPrimitiveField(resBodyObj, 'nextPartNumber', 'number')),
               });
             } catch (err: unknown) {
               if (err instanceof Error) {
