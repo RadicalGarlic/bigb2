@@ -73,4 +73,16 @@ export class B2ApiError extends Bigb2Error {
   public isServiceUnavailableError503(): boolean {
     return (this.b2ApiErrorBody?.status === 503) && (this.b2ApiErrorBody?.code === 'service_unavailable');
   }
+
+  public isRequestTimeoutError408(): boolean {
+    return this.b2ApiErrorBody?.status === 408;
+  }
+
+  public isTooManyRequestsError429(): boolean {
+    return this.b2ApiErrorBody?.status === 429;
+  }
+
+  public shouldBackOffRetry(): boolean {
+    return this.isRequestTimeoutError408() || this.isTooManyRequestsError429();
+  }
 }

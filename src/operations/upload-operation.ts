@@ -1,6 +1,6 @@
 import * as fsPromises from 'node:fs/promises';
 
-import { fileFullRead, getFileLength } from "utils/files";
+import { fileFullRead, getFileLength, ScopedFileHandle } from "utils/files";
 import { Operation } from "./operation";
 import { UsageError } from "./usage-error";
 import { B2Api } from "b2-api/b2-api";
@@ -14,8 +14,11 @@ import {
 import { Bigb2Error } from "bigb2-error";
 import { hash } from 'utils/hasher';
 import { File, getFileByPath } from 'b2-iface/files';
-import { MAX_UPLOAD_PARTS } from 'b2-api/calls/upload-part';
+import { MAX_UPLOAD_PARTS, UploadPartRequest } from 'b2-api/calls/upload-part';
 import { StartLargeFileRequest, StartLargeFileResponse } from 'b2-api/calls/start-large-file';
+import { GetUploadPartUrlRequest, GetUploadPartUrlResponse } from 'b2-api/calls/get-upload-part-url';
+import { B2ApiError } from 'b2-api/b2-api-error';
+import { sleep } from 'utils/sleep';
 
 interface UploadPart {
   partNum: number,
@@ -27,6 +30,19 @@ interface UploadProgress {
   fileId: string;
   bytesUploaded: number;
   parts: UploadPart[];
+}
+
+interface SyncUploadProgressResult {
+  uploadPartSize: number;
+  fileId: string;
+  bytesUploaded: number;
+  srcFileLen: number;
+  parts: UploadPart[];
+}
+
+interface UploadPartUrlAndAuth {
+  url: string;
+  authToken: string;
 }
 
 export class UploadOperation extends Operation {
@@ -61,44 +77,142 @@ export class UploadOperation extends Operation {
       await this.smallUpload();
     }
 
-
-    // const uploadParts: SyncResult | null = await this.syncWithPartiallyUploadedFile
-    // if ()
-
-            //       else if (status == 401 /* Unauthorized */ &&
-            //            (response.status_code.equals("expired_auth_token") || response.status_code.equals("bad_auth_token")) {
-            //     // Upload auth token has expired.  Time for a new one.
-            //     urlAndAuthToken = null;
-            // }
-            // else if (status == 408 /* Request Timeout */) {
-            //     // Retry and hope the upload goes faster this time
-            //     exponentialBackOff();
-            // }
-            // else if (status == 429 /* Too Many Requests */) {
-            //     // We are making too many requests
-            //     exponentialBackOff();
-
-
-
-
-
     return 0;
   }
 
   private async smallUpload(): Promise<void> {
+    throw new Bigb2Error('unimplemented');
   }
 
-  private async largeUpload(bucketId: string, uploadProgress?: UploadProgress): Promise<void> {
+  private async largeUpload(
+    bucketId: string,
+    uploadProgress?: UploadProgress
+  ): Promise<void> {
+    const syncedUploadProgress: SyncUploadProgressResult = await this.syncUploadProgress(bucketId, uploadProgress);
+    let bytesUploaded = syncedUploadProgress.bytesUploaded;
+    let curPartNum = syncedUploadProgress.parts.length + 1;
+    const uploadParts: UploadPart[] = syncedUploadProgress.parts;
+    let urlAndAuth: UploadPartUrlAndAuth = await this.getUploadPartUrl(syncedUploadProgress.fileId);
+    let consecutiveAuthFailures = 0;
+    let consecutiveUploadAuthFailures = 0;
+    let consecutiveBackoffErrors = 0;
+    const MAX_FAILURES = 3;
+    await using srcFileHandle = await ScopedFileHandle.fromPath(this.srcFilePath);
+    while (bytesUploaded < syncedUploadProgress.srcFileLen) {
+      if (consecutiveAuthFailures > MAX_FAILURES) {
+        throw new Bigb2Error('Max consecutive auth failures reached. Aborting.');
+      }
+      if (consecutiveUploadAuthFailures > MAX_FAILURES) {
+        throw new Bigb2Error('Max consecutive upload auth errors reached. Aborting');
+      }
+      if (consecutiveBackoffErrors > MAX_FAILURES) {
+        throw new Bigb2Error('Max consecutive backoff errors reached. Aborting');
+      }
+      if (curPartNum > MAX_UPLOAD_PARTS) {
+        throw new Bigb2Error(`curPartNum=${curPartNum} exceeds max (${MAX_UPLOAD_PARTS}). Aborting`);
+      }
+      if (bytesUploaded > syncedUploadProgress.srcFileLen) {
+        throw new Bigb2Error('Bytes uploaded somehow exceeds source file length Aborting');
+      }
+
+      try {
+        if (consecutiveBackoffErrors) {
+          console.log('Backoff error. Backing off.');
+          await sleep(5000);
+        }
+        if (consecutiveAuthFailures) {
+          console.log('Expired auth failure. Re-authing.');
+          this.b2Api = await B2Api.fromKeyFile();
+        }
+        if (consecutiveUploadAuthFailures) {
+          console.log('Upload auth failure. Re-authing.');
+          urlAndAuth = await this.getUploadPartUrl(syncedUploadProgress.fileId);
+        }
+
+        const fileChunk: Buffer = await fileFullRead(
+          srcFileHandle.fileHandle,
+          bytesUploaded,
+          Math.min(
+            syncedUploadProgress.uploadPartSize,
+            syncedUploadProgress.srcFileLen - bytesUploaded,
+          ),
+        );
+        const contentHash = hash(fileChunk, 'sha1').toString('hex');
+        const req = new UploadPartRequest({
+          uploadPartUrl: new URL(urlAndAuth.url),
+          authToken: urlAndAuth.authToken,
+          partNumber: curPartNum,
+          contentLength: fileChunk.length,
+          sha1Hex: contentHash,
+          payload: fileChunk,
+        });
+        await req.send();
+        consecutiveAuthFailures = 0;
+        consecutiveUploadAuthFailures = 0;
+        consecutiveBackoffErrors = 0;
+        bytesUploaded += fileChunk.length;
+        curPartNum += 1;
+        uploadParts.push({
+          partNum: curPartNum,
+          contentLength: fileChunk.length,
+          contentSha1: contentHash,
+        })
+      } catch (err: unknown) {
+        if (err instanceof B2ApiError) {
+          if (err.isExpiredAuthError()) {
+            consecutiveAuthFailures += 1;
+            continue;
+          } else if (err.isServiceUnavailableError503()) {
+            consecutiveUploadAuthFailures += 1;
+            continue;
+          } else if (err.shouldBackOffRetry()) {
+            consecutiveBackoffErrors += 1;
+            continue;
+          } else {
+            throw err;
+          }
+        } else if (err instanceof Error) {
+          throw new Bigb2Error('Large upload failed', { cause: err });
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    // finish the file
+  }
+
+  private async getUploadPartUrl(fileId: string): Promise<UploadPartUrlAndAuth> {
+    const req = new GetUploadPartUrlRequest({
+      apiUrl: new URL(this.b2Api!.auths!.apiUrl),
+      authToken: this.b2Api!.auths!.authorizationToken,
+      fileId,
+    });
+    const res: GetUploadPartUrlResponse = await req.send();
+    return {
+      url: res.uploadUrl,
+      authToken: res.authorizationToken,
+    };
+  }
+
+  private async syncUploadProgress(
+    bucketId: string,
+    uploadProgress?: UploadProgress
+  ): Promise<SyncUploadProgressResult> {
     let bytesUploaded = 0;
-    let partSha1s: string[] = [];
+    let uploadParts: UploadPart[] = [];
     if (uploadProgress) {
       bytesUploaded = uploadProgress.bytesUploaded;
-      partSha1s = uploadProgress.parts.map((value: UploadPart) => value.contentSha1);
+      uploadParts = uploadProgress.parts;
     }
-    if (partSha1s.length >= MAX_UPLOAD_PARTS) {
+    if (uploadParts.length >= MAX_UPLOAD_PARTS) {
       throw new Bigb2Error(`${MAX_UPLOAD_PARTS} or more upload parts already uploaded. Max is ${MAX_UPLOAD_PARTS} per the docs. Aborting.`);
     }
-    const bytesRemaining = (await getFileLength(this.srcFilePath)) - bytesUploaded;
+    const srcFileLen = await getFileLength(this.srcFilePath);
+    if (srcFileLen < bytesUploaded) {
+      throw new Bigb2Error(`Detected more bytes uploaded than exist in source file. Aborting.`);
+    }
+    const bytesRemaining = srcFileLen - bytesUploaded;
     const numPartsRemaining = MAX_UPLOAD_PARTS - (uploadProgress?.parts.length ?? 0);
     const uploadPartSize = Math.max(this.b2Api!.auths!.recommendedPartSize, Math.ceil(bytesRemaining / numPartsRemaining));
 
@@ -116,8 +230,13 @@ export class UploadOperation extends Operation {
       fileId = res.fileId;
     }
 
-    // check against max part num of 10,000
-    // large upload must keep all part hashes
+    return {
+      uploadPartSize,
+      fileId,
+      bytesUploaded,
+      srcFileLen,
+      parts: uploadParts,
+    }
   }
 
   private async getUploadProgress(bucketId: string): Promise<UploadProgress | null> {
