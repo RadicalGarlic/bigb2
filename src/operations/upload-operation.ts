@@ -19,6 +19,7 @@ import { StartLargeFileRequest, StartLargeFileResponse } from 'b2-api/calls/star
 import { GetUploadPartUrlRequest, GetUploadPartUrlResponse } from 'b2-api/calls/get-upload-part-url';
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { sleep } from 'utils/sleep';
+import { FinishLargeFileRequest, FinishLargeFileResponse } from 'b2-api/calls/finish-large-file';
 
 interface UploadPart {
   partNum: number,
@@ -89,13 +90,26 @@ export class UploadOperation extends Operation {
     uploadProgress?: UploadProgress
   ): Promise<void> {
     const syncedUploadProgress: SyncUploadProgressResult = await this.syncUploadProgress(bucketId, uploadProgress);
-    this.uploadParts(syncedUploadProgress);
-    // finish file
+    const uploadParts: UploadPart[] = await this.uploadParts(syncedUploadProgress);
+    await this.finishLargeUpload(
+      syncedUploadProgress.fileId,
+      uploadParts.map((part: UploadPart) => part.contentSha1),
+    );
+  }
+
+  private async finishLargeUpload(fileId: string, partSha1Array: string[]): Promise<void> {
+    const req = new FinishLargeFileRequest({
+      apiUrl: new URL(this.b2Api!.auths!.apiUrl),
+      authToken: this.b2Api!.auths!.authorizationToken,
+      fileId,
+      partSha1Array,
+    });
+    const res: FinishLargeFileResponse = await req.send();
   }
 
   private async uploadParts(
     syncedUploadProgress: SyncUploadProgressResult
-  ): Promise<void> {
+  ): Promise<UploadPart[]> {
     let bytesUploaded = syncedUploadProgress.bytesUploaded;
     let curPartNum = syncedUploadProgress.parts.length + 1;
     const uploadParts: UploadPart[] = syncedUploadProgress.parts;
@@ -188,6 +202,7 @@ export class UploadOperation extends Operation {
     if (bytesUploaded !== syncedUploadProgress.srcFileLen) {
       throw new Bigb2Error('Finished uploading parts but bytesUploaded !== srcFileLen. Aborting.');
     }
+    return uploadParts;
   }
 
   private async getUploadPartUrl(fileId: string): Promise<UploadPartUrlAndAuth> {
