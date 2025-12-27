@@ -85,8 +85,9 @@ export class UploadOperation extends Operation {
   private async smallUpload(): Promise<void> {
     await using srcFileHandle: ScopedFileHandle = await ScopedFileHandle.fromPath(this.srcFilePath);
     const srcFileLen: number = (await srcFileHandle.fileHandle.stat()).size;
+    const srcFileBuffer: Buffer = await fileFullRead(srcFileHandle.fileHandle, 0, srcFileLen);
     const sha1Hex: string = hash(
-      await fileFullRead(srcFileHandle.fileHandle, 0, srcFileLen),
+      srcFileBuffer,
       'sha1'
     ).toString('hex');
     const req = new UploadFileRequest({
@@ -96,6 +97,7 @@ export class UploadOperation extends Operation {
       contentSha1: sha1Hex,
       contentLength: srcFileLen,
       fileName: this.dstFilePath,
+      payload: srcFileBuffer,
     });
     await req.send();
   }

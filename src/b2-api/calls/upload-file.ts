@@ -21,6 +21,7 @@ export class UploadFileRequest {
     contentType: string,
     contentLength: number,
     contentSha1: string,
+    payload: Buffer,
   }) { }
 
   async send(): Promise<UploadFileResponse> {
@@ -30,7 +31,13 @@ export class UploadFileRequest {
         const req: http.ClientRequest = https.request(
           url,
           {
-            headers: { Authorization: this.args.authToken },
+            headers: {
+              Authorization: this.args.authToken,
+              'X-Bz-File-Name': encodeURIComponent(this.args.fileName),
+              'Content-Type': this.args.contentType,
+              'Content-Length': String(this.args.contentLength),
+              'X-Bz-Content-Sha1': this.args.contentSha1,
+            },
             method: 'POST'
           }
         );
@@ -70,6 +77,12 @@ export class UploadFileRequest {
               return reject(err);
             }
           });
+        });
+        req.write(this.args.payload, (err: Error | null | unknown) => {
+          if (err instanceof Error) {
+            return reject(new B2ApiError('UploadFile failed', err ? { cause: err } : undefined))
+          }
+          return reject(err);
         });
         req.end();
       }
