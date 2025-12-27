@@ -44,3 +44,4 @@ main()
 // TODO: exclamation points don't work like how you think
 // TODO: Bump API version
 // TODO: https://zod.dev/
+// TODO: Less reliance on "!", or at least ensure it throws good exception. Non-null version of classes?
