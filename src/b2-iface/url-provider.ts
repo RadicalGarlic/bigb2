@@ -107,4 +107,11 @@ export class UrlProvider {
       apiUrl,
     )
   }
+
+  static uploadFileUrl(apiUrl: URL): URL {
+    return new URL(
+      path.join(UrlProvider.B2API, UrlProvider.VERSION, 'b2_upload_file'),
+      apiUrl,
+    )
+  }
 }

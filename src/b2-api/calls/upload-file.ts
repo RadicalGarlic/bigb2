@@ -3,6 +3,7 @@ import * as http from 'node:http';
 
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { UrlProvider } from 'b2-iface/url-provider';
 
 export interface UploadFileResponse {
   fileId: string;
@@ -25,8 +26,9 @@ export class UploadFileRequest {
   async send(): Promise<UploadFileResponse> {
     return new Promise<UploadFileResponse>(
       (resolve, reject) => {
+        const url: URL = UrlProvider.uploadFileUrl(this.args.apiUrl);
         const req: http.ClientRequest = https.request(
-          this.args.apiUrl,
+          url,
           {
             headers: { Authorization: this.args.authToken },
             method: 'POST'

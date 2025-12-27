@@ -20,6 +20,7 @@ import { GetUploadPartUrlRequest, GetUploadPartUrlResponse } from 'b2-api/calls/
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { sleep } from 'utils/sleep';
 import { FinishLargeFileRequest, FinishLargeFileResponse } from 'b2-api/calls/finish-large-file';
+import { UploadFileRequest } from 'b2-api/calls/upload-file';
 
 interface UploadPart {
   partNum: number,
@@ -82,7 +83,21 @@ export class UploadOperation extends Operation {
   }
 
   private async smallUpload(): Promise<void> {
-    throw new Bigb2Error('unimplemented');
+    await using srcFileHandle: ScopedFileHandle = await ScopedFileHandle.fromPath(this.srcFilePath);
+    const srcFileLen: number = (await srcFileHandle.fileHandle.stat()).size;
+    const sha1Hex: string = hash(
+      await fileFullRead(srcFileHandle.fileHandle, 0, srcFileLen),
+      'sha1'
+    ).toString('hex');
+    const req = new UploadFileRequest({
+      apiUrl: new URL(this.b2Api!.auths!.apiUrl),
+      authToken: this.b2Api!.auths!.authorizationToken,
+      contentType: 'application/octet-stream',
+      contentSha1: sha1Hex,
+      contentLength: srcFileLen,
+      fileName: this.dstFilePath,
+    });
+    await req.send();
   }
 
   private async largeUpload(
@@ -104,7 +119,7 @@ export class UploadOperation extends Operation {
       fileId,
       partSha1Array,
     });
-    const res: FinishLargeFileResponse = await req.send();
+    await req.send();
   }
 
   private async uploadParts(
