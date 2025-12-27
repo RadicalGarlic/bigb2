@@ -3,9 +3,7 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { throwExpression } from 'utils/throw-expression';
-import { assertNum } from 'utils/num-check';
-import { B2Api } from 'b2-api/b2-api';
+import { assertPrimitiveField } from 'utils/assert-primitive-field';
 
 export interface File {
   accountId: string;
@@ -59,23 +57,25 @@ export class ListFileNamesRequest {
             if (res.statusCode !== 200 || B2ApiError.isB2ApiError(resBodyString)) {
               throw new B2ApiError('ListFileNamesRequest error', undefined, resBodyObj);
             }
-            return resolve({
-              files: resBodyObj?.files?.map((file: any) => {
-                return {
-                  accountId: file?.accountId
-                    ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (accountId). JSON=${resBodyString}`)),
-                  bucketId: file?.bucketId
-                    ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (bucketId). JSON=${resBodyString}`)),
-                  fileId: file?.fileId
-                    ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (fileId). JSON=${resBodyString}`)),
-                  fileName: file?.fileName
-                    ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (fileName). JSON=${resBodyString}`)),
-                  contentLength:
-                    assertNum(file?.contentLength, new B2ApiError(`ListFileNamesRequest parse error (contentLength). JSON=${resBodyString}`)),
-                };
-              }) ?? throwExpression(new B2ApiError(`ListFileNamesRequest parse error (files). JSON=${resBodyString}`)),
-              nextFileName: resBodyObj?.nextFileName,
-            });
+            try {
+              return resolve({
+                nextFileName: resBodyObj.nextFileName ?? null,
+                files: resBodyObj.files!.map((file: any) => {
+                  return {
+                    accountId: String(assertPrimitiveField(file, 'accountId', 'string')),
+                    bucketId: String(assertPrimitiveField(file, 'bucketId', 'string')),
+                    fileId: String(assertPrimitiveField(file, 'fileId', 'string')),
+                    fileName: String(assertPrimitiveField(file, 'fileName', 'string')),
+                    contentLength: Number(assertPrimitiveField(file, 'contentLength', 'number')),
+                  };
+                }),
+              });
+            } catch (err: unknown) {
+              if (err instanceof Error) {
+                throw new B2ApiError(`ListFileNames response parse error. JSON=${resBodyString}`, { cause: err });
+              }
+              throw err;
+            }
           });
         }
       );
