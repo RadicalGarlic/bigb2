@@ -4,7 +4,7 @@ import { isNum } from "utils/num-check";
 
 export interface B2ApiErrorBody {
   code: string;
-  message: string;
+  message?: string;
   status: number;
 }
 
@@ -17,14 +17,14 @@ export class B2ApiError extends Bigb2Error {
     super(fullMsg, options);
   }
 
-  public static fromObj(errBody: object, message?: string): B2ApiError {
+  public static fromObj(errBody: any, message?: string): B2ApiError {
     try {
       return new B2ApiError(
         message ? message : 'B2 API error',
         undefined,
         {
           code: String(assertPrimitiveField(errBody, 'code', 'string')),
-          message: String(assertPrimitiveField(errBody, 'message', 'string')),
+          message: errBody.message,
           status: Number(assertPrimitiveField(errBody, 'status', 'number')),
         },
       );
