@@ -89,12 +89,11 @@ export class UploadOperation extends Operation {
     uploadProgress?: UploadProgress
   ): Promise<void> {
     const syncedUploadProgress: SyncUploadProgressResult = await this.syncUploadProgress(bucketId, uploadProgress);
-    this.uploadParts(bucketId, syncedUploadProgress);
+    this.uploadParts(syncedUploadProgress);
     // finish file
   }
 
   private async uploadParts(
-    bucketId: string,
     syncedUploadProgress: SyncUploadProgressResult
   ): Promise<void> {
     let bytesUploaded = syncedUploadProgress.bytesUploaded;
