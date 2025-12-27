@@ -100,4 +100,11 @@ export class UrlProvider {
       apiUrl,
     );
   }
+
+  static finishLargeFileUrl(apiUrl: URL): URL {
+    return new URL(
+      path.join(UrlProvider.B2API, UrlProvider.VERSION, 'b2_finish_large_file'),
+      apiUrl,
+    )
+  }
 }

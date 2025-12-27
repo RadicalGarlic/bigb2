@@ -3,6 +3,7 @@ import * as http from 'node:http';
 
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { UrlProvider } from 'b2-iface/url-provider';
 
 export interface FinishLargeFileResponse {
   fileId: string;
@@ -19,10 +20,11 @@ export class FinishLargeFileRequest {
   }) { }
 
   async send(): Promise<FinishLargeFileResponse> {
+    const url = UrlProvider.finishLargeFileUrl(this.args.apiUrl);
     return new Promise<FinishLargeFileResponse>(
       (resolve, reject) => {
         const req: http.ClientRequest = https.request(
-          this.args.apiUrl,
+          url,
           {
             headers: { Authorization: this.args.authToken },
             method: 'POST'
