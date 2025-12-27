@@ -89,6 +89,14 @@ export class UploadOperation extends Operation {
     uploadProgress?: UploadProgress
   ): Promise<void> {
     const syncedUploadProgress: SyncUploadProgressResult = await this.syncUploadProgress(bucketId, uploadProgress);
+    this.uploadParts(bucketId, syncedUploadProgress);
+    // finish file
+  }
+
+  private async uploadParts(
+    bucketId: string,
+    syncedUploadProgress: SyncUploadProgressResult
+  ): Promise<void> {
     let bytesUploaded = syncedUploadProgress.bytesUploaded;
     let curPartNum = syncedUploadProgress.parts.length + 1;
     const uploadParts: UploadPart[] = syncedUploadProgress.parts;
@@ -178,8 +186,9 @@ export class UploadOperation extends Operation {
         }
       }
     }
-
-    // finish the file
+    if (bytesUploaded !== syncedUploadProgress.srcFileLen) {
+      throw new Bigb2Error('Finished uploading parts but bytesUploaded !== srcFileLen. Aborting.');
+    }
   }
 
   private async getUploadPartUrl(fileId: string): Promise<UploadPartUrlAndAuth> {
