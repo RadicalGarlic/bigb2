@@ -1,6 +1,5 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
-import * as path from 'node:path';
 
 import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
@@ -9,20 +8,20 @@ import { isLeft } from 'fp-ts/lib/Either';
 import { UrlProvider } from 'b2-iface/url-provider';
 
 export class GetFileInfoRequest {
-  constructor(
-    private apiUrl: URL,
-    private authToken: string,
-    private fileId: string
-  ) { }
+  constructor(private args: {
+    apiUrl: URL,
+    authToken: string,
+    fileId: string
+  }) { }
 
   async send(): Promise<GetFileInfoResponseType> {
     return new Promise<GetFileInfoResponseType>((resolve, reject) => {
-      const url: URL = UrlProvider.getFileInfo(this.apiUrl);
-      url.searchParams.append('fileId', this.fileId);
+      const url: URL = UrlProvider.getFileInfoUrl(this.args.apiUrl);
+      url.searchParams.append('fileId', this.args.fileId);
       const req: http.ClientRequest = https.get(
         url,
         {
-          headers: { Authorization: this.authToken }
+          headers: { Authorization: this.args.authToken }
         },
         ((res: http.IncomingMessage) => {
           const chunks: string[] = [];

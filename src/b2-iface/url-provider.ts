@@ -27,7 +27,7 @@ export class UrlProvider {
     );
   }
 
-  static getFileInfo(apiUrl: URL): URL {
+  static getFileInfoUrl(apiUrl: URL): URL {
     return new URL(
       path.join(UrlProvider.B2API, UrlProvider.VERSION, 'b2_get_file_info'),
       apiUrl
