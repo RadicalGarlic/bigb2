@@ -31,7 +31,10 @@ async function main(): Promise<void> {
 
 main()
   .then(() => {})
-  .catch((err: unknown) => { throw err; });
+  .catch((err: unknown) => {
+    console.log(`Fatal error, ${err}`);
+    throw err;
+  });
 
 // TODO: bigint (ok for now as max num is like 9000 TB)
 // TODO: Fix up UrlProvider
