@@ -21,6 +21,7 @@ import { B2ApiError } from 'b2-api/b2-api-error';
 import { sleep } from 'utils/sleep';
 import { FinishLargeFileRequest, FinishLargeFileResponse } from 'b2-api/calls/finish-large-file';
 import { UploadFileRequest } from 'b2-api/calls/upload-file';
+import { GetUploadUrlRequest, GetUploadUrlResponse } from 'b2-api/calls/get-upload-url';
 
 interface UploadPart {
   partNum: number,
@@ -76,13 +77,19 @@ export class UploadOperation extends Operation {
     if (uploadProgress || (srcFileLen > this.b2Api.auths!.recommendedPartSize)) {
       await this.largeUpload(bucket.bucketId, uploadProgress ?? undefined);
     } else {
-      await this.smallUpload();
+      await this.smallUpload(bucket.bucketId);
     }
 
     return 0;
   }
 
-  private async smallUpload(): Promise<void> {
+  private async smallUpload(bucketId: string): Promise<void> {
+    const getUploadUrlReq = new GetUploadUrlRequest({
+      apiUrl: new URL(this.b2Api!.auths!.apiUrl),
+      authToken: this.b2Api!.auths!.authorizationToken,
+      bucketId,
+    });
+    const uploadUrlAndAuth: GetUploadUrlResponse = await getUploadUrlReq.send();
     await using srcFileHandle: ScopedFileHandle = await ScopedFileHandle.fromPath(this.srcFilePath);
     const srcFileLen: number = (await srcFileHandle.fileHandle.stat()).size;
     const srcFileBuffer: Buffer = await fileFullRead(srcFileHandle.fileHandle, 0, srcFileLen);
@@ -91,8 +98,8 @@ export class UploadOperation extends Operation {
       'sha1'
     ).toString('hex');
     const req = new UploadFileRequest({
-      apiUrl: new URL(this.b2Api!.auths!.apiUrl),
-      authToken: this.b2Api!.auths!.authorizationToken,
+      uploadUrl: new URL(uploadUrlAndAuth.uploadUrl),
+      uploadAuthToken: uploadUrlAndAuth.uploadAuthorizationToken,
       contentType: 'application/octet-stream',
       contentSha1: sha1Hex,
       contentLength: srcFileLen,

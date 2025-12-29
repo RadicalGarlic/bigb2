@@ -3,7 +3,6 @@ import * as http from 'node:http';
 
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { assertPrimitiveField } from 'utils/assert-primitive-field';
-import { UrlProvider } from 'b2-iface/url-provider';
 
 export interface UploadFileResponse {
   fileId: string;
@@ -15,8 +14,8 @@ export interface UploadFileResponse {
 
 export class UploadFileRequest {
   constructor(private args: {
-    apiUrl: URL,
-    authToken: string,
+    uploadUrl: URL,
+    uploadAuthToken: string,
     fileName: string,
     contentType: string,
     contentLength: number,
@@ -27,12 +26,11 @@ export class UploadFileRequest {
   async send(): Promise<UploadFileResponse> {
     return new Promise<UploadFileResponse>(
       (resolve, reject) => {
-        const url: URL = UrlProvider.uploadFileUrl(this.args.apiUrl);
         const req: http.ClientRequest = https.request(
-          url,
+          this.args.uploadUrl,
           {
             headers: {
-              Authorization: this.args.authToken,
+              Authorization: this.args.uploadAuthToken,
               'X-Bz-File-Name': encodeURIComponent(this.args.fileName),
               'Content-Type': this.args.contentType,
               'Content-Length': String(this.args.contentLength),
@@ -55,11 +53,11 @@ export class UploadFileRequest {
               return reject(new B2ApiError('UploadFile interrupted'));
             }
             const resBodyJson: string = Buffer.concat(resChunks).toString('utf-8');
-            const resBodyObj = JSON.parse(resBodyJson);
-            if (B2ApiError.isB2ApiError(resBodyObj) || res.statusCode !== 200) {
-              return reject(B2ApiError.fromObj(resBodyObj, 'UploadFile failed'));
-            }
             try {
+              const resBodyObj = JSON.parse(resBodyJson);
+              if (B2ApiError.isB2ApiError(resBodyObj) || res.statusCode !== 200) {
+                return reject(B2ApiError.fromObj(resBodyObj, 'UploadFile failed'));
+              }
               return resolve({
                 fileId: String(assertPrimitiveField(resBodyObj, 'fileId', 'string')),
                 fileName: String(assertPrimitiveField(resBodyObj, 'fileName', 'string')),
@@ -80,9 +78,9 @@ export class UploadFileRequest {
         });
         req.write(this.args.payload, (err: Error | null | unknown) => {
           if (err instanceof Error) {
-            return reject(new B2ApiError('UploadFile failed', err ? { cause: err } : undefined))
+            return reject(new B2ApiError('UploadFile failed', { cause: err }));
           }
-          return reject(err);
+          // success!
         });
         req.end();
       }
