@@ -3,10 +3,11 @@ import * as path from 'path';
 enum Version {
   V2 = 'v2',
   V3 = 'v3',
+  V4 = 'v4',
 }
 
 export class UrlProvider {
-  private static readonly VERSION = Version.V2;
+  private static readonly VERSION = Version.V4;
   private static readonly B2API = 'b2api';
 
   static authorizeUrl(): URL {
