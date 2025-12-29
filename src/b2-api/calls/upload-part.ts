@@ -66,7 +66,10 @@ export class UploadPartRequest {
           });
         });
         req.write(this.args.payload, (err: Error | null | undefined) => {
-          return reject(new B2ApiError(`Failed send UploadPart`, err ? { cause: err } : undefined));
+          if (err instanceof Error) {
+            return reject(new B2ApiError(`Failed send UploadPart`, { cause: err }));
+          }
+          // success!
         });
         req.end();
       }
