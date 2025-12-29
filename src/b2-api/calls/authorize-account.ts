@@ -3,6 +3,9 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { throwExpression } from 'utils/throw-expression';
+import { B2ApiError } from 'b2-api/b2-api-error';
+import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { assertFieldIs } from 'utils/assert-field-is';
 
 export interface AccountKey {
   keyId: string;
@@ -26,44 +29,83 @@ export class AuthorizeAccountRequest {
   }
 
   async send(): Promise<AuthorizeAccountResponse> {
-    const base64: string
-      = Buffer
-        .from(`${this.accountKey.keyId}:${this.accountKey.appKey}`)
-        .toString('base64');
-    const auth = `Basic ${base64}`;
-
     return new Promise<AuthorizeAccountResponse>((resolve, reject) => {
+      const base64: string
+        = Buffer
+          .from(`${this.accountKey.keyId}:${this.accountKey.appKey}`)
+          .toString('base64');
+      const auth = `Basic ${base64}`;
       const req: http.ClientRequest = https.get(
         UrlProvider.authorizeUrl(),
         {
           headers: { AUTHORIZATION: auth }
         },
         ((res: http.IncomingMessage) => {
-          const chunks: string[] = [];
-          res.on('data', (chunk: string) => { chunks.push(chunk); });
+          const chunks: Buffer[] = [];
+          res.on('data', (chunk: Buffer) => { chunks.push(chunk); });
           res.on('error', (err: Error) => { reject(err); });
           res.on('end', () => {
             if (!res.complete) {
-              reject(new Error('Request interrupted'));
-            } else {
+              return reject(new B2ApiError('AuthorizeAccount interrupted'));
+            }
+            try {
               const resBody = JSON.parse(chunks.join(''));
-              resolve({
-                accountId: resBody['accountId'] ?? throwExpression(new Error(`Malformed body ${JSON.stringify(resBody)}`)),
-                authorizationToken: resBody['authorizationToken'],
-                apiUrl: resBody['apiUrl'] ?? throwExpression(new Error(`Malformed body ${JSON.stringify(resBody)}`)),
-                downloadUrl: resBody['downloadUrl'],
-                recommendedPartSize: Number(resBody['recommendedPartSize'] 
-                  ?? throwExpression(new Error(`Malformed body ${JSON.stringify(resBody)}`))
+              return resolve({
+                accountId: String(assertPrimitiveField(resBody, 'accountId', 'string')),
+                authorizationToken: String(assertPrimitiveField(resBody, 'authorizationToken', 'string')),
+                apiUrl: String(
+                  assertPrimitiveField(
+                    assertFieldIs(
+                      assertFieldIs(resBody, 'apiInfo'),
+                      'storageApi',
+                    ),
+                    'apiUrl',
+                    'string'
+                  )
                 ),
-                absoluteMinimumPartSize: Number(resBody['absoluteMinimumPartSize'] 
-                  ?? throwExpression(new Error(`Malformed body ${JSON.stringify(resBody)}`))
+                downloadUrl: String(
+                  assertPrimitiveField(
+                    assertFieldIs(
+                      assertFieldIs(resBody, 'apiInfo'),
+                      'storageApi',
+                    ),
+                    'downloadUrl',
+                    'string'
+                  )
+                ),
+                recommendedPartSize: Number(
+                  assertPrimitiveField(
+                    assertFieldIs(
+                      assertFieldIs(resBody, 'apiInfo'),
+                      'storageApi',
+                    ),
+                    'recommendedPartSize',
+                    'number'
+                  )
+                ),
+                absoluteMinimumPartSize: Number(
+                  assertPrimitiveField(
+                    assertFieldIs(
+                      assertFieldIs(resBody, 'apiInfo'),
+                      'storageApi',
+                    ),
+                    'absoluteMinimumPartSize',
+                    'number'
+                  )
                 ),
               });
+            } catch (err: unknown) {
+              if (err instanceof Error) {
+                return reject(new B2ApiError('AuthorizeAccount failed', { cause: err }));
+              }
+              return reject(err);
             }
           });
         })
       );
-      req.on('error', (err: Error) => { reject(err); });
+      req.on('error', (err: Error) => {
+        return reject(new B2ApiError('AuthorizeAccount failed', { cause: err }));
+      });
     });
   }
 }
