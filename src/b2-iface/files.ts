@@ -7,6 +7,7 @@ export interface File {
   fileId: string;
   fileName: string;
   contentLength: number;
+  action: string; // TODO: enforce limited values
 }
 
 export async function getFileByPath(b2Api: B2Api, bucketId: string, filePath: string): Promise<File | null> {
@@ -20,5 +21,6 @@ export async function getFileByPath(b2Api: B2Api, bucketId: string, filePath: st
     fileId: files.files[0].fileId,
     fileName: files.files[0].fileName,
     contentLength: files.files[0].contentLength,
+    action: files.files[0].action,
   };
 }

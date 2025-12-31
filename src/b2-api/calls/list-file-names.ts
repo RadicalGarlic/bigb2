@@ -4,6 +4,7 @@ import * as http from 'node:http';
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { assertFieldIs } from 'utils/assert-field-is';
 
 export interface File {
   accountId: string;
@@ -11,6 +12,7 @@ export interface File {
   fileId: string;
   fileName: string;
   contentLength: number;
+  action: string; // TODO: enforce limited values
 }
 
 export interface ListFileNamesResponse {
@@ -60,13 +62,14 @@ export class ListFileNamesRequest {
             try {
               return resolve({
                 nextFileName: resBodyObj.nextFileName ?? null,
-                files: resBodyObj.files!.map((file: any) => {
+                files: assertFieldIs(resBodyObj, 'files').map((file: any) => {
                   return {
                     accountId: String(assertPrimitiveField(file, 'accountId', 'string')),
                     bucketId: String(assertPrimitiveField(file, 'bucketId', 'string')),
                     fileId: String(assertPrimitiveField(file, 'fileId', 'string')),
                     fileName: String(assertPrimitiveField(file, 'fileName', 'string')),
                     contentLength: Number(assertPrimitiveField(file, 'contentLength', 'number')),
+                    action: String(assertPrimitiveField(file, 'action', 'string')),
                   };
                 }),
               });

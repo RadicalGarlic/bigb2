@@ -20,8 +20,10 @@ export class GetUploadPartUrlRequest {
 
   async send(): Promise<GetUploadPartUrlResponse> {
     return new Promise<GetUploadPartUrlResponse>((resolve, reject) => {
+      const url: URL = UrlProvider.getUploadPartUrl(this.args.apiUrl);
+      url.searchParams.append('fileId', this.args.fileId);
       const req: http.ClientRequest = https.get(
-        UrlProvider.getUploadPartUrl(this.args.apiUrl),
+        url,
         {
           headers: { Authorization: this.args.authToken }
         },
@@ -38,7 +40,7 @@ export class GetUploadPartUrlRequest {
             const resBodyJson: string = Buffer.concat(resChunks).toString('utf-8');
             const resBodyObj = JSON.parse(resBodyJson);
             if (res.statusCode !== 200 || B2ApiError.isB2ApiError(resBodyJson)) {
-              return reject(B2ApiError.fromJson(resBodyJson));
+              return reject(B2ApiError.fromJson(resBodyJson, 'GetUploadPartUrl failed'));
             }
             return resolve({
               authorizationToken: resBodyObj.authorizationToken ?? throwExpression(

@@ -58,7 +58,10 @@ export class StartLargeFileRequest {
             contentType: this.args.contentType ?? 'application/octet-stream',
           }),
           (err: Error | null | undefined) => {
-            return reject(new B2ApiError('StartLargeFile', err ? { cause: err } : undefined));
+            if (err instanceof Error) {
+              return reject(new B2ApiError('StartLargeFile failed', { cause: err }));
+            }
+            // success!
           }
         );
         req.end();

@@ -68,7 +68,7 @@ export class UploadOperation extends Operation {
     this.b2Api = await B2Api.fromKeyFile();
     const bucket: Bucket = await getBucketByName(this.b2Api, this.dstBucketName);
     const file: File | null = await getFileByPath(this.b2Api, bucket.bucketId, this.dstFilePath);
-    if (file) {
+    if (file && file?.action !== 'start') {
       throw new Bigb2Error(`Found existing file in bucket "${bucket.bucketName}" with path "${this.dstFilePath}". Refusing to upload`);
     }
 
@@ -79,7 +79,7 @@ export class UploadOperation extends Operation {
     } else {
       await this.smallUpload(bucket.bucketId);
     }
-
+    console.log(`Successfully uploaded file "${this.srcFilePath}" to bucket "${this.dstBucketName}" at path "${this.dstFilePath}"`);
     return 0;
   }
 
@@ -113,7 +113,9 @@ export class UploadOperation extends Operation {
     bucketId: string,
     uploadProgress?: UploadProgress
   ): Promise<void> {
+    console.log('Beginning large file upload');
     const syncedUploadProgress: SyncUploadProgressResult = await this.syncUploadProgress(bucketId, uploadProgress);
+    console.log(`Synced upload progress. ${syncedUploadProgress.bytesUploaded} bytes uploaded. ${syncedUploadProgress.parts.length} parts uploaded.`);
     const uploadParts: UploadPart[] = await this.uploadParts(syncedUploadProgress);
     await this.finishLargeUpload(
       syncedUploadProgress.fileId,
@@ -122,6 +124,7 @@ export class UploadOperation extends Operation {
   }
 
   private async finishLargeUpload(fileId: string, partSha1Array: string[]): Promise<void> {
+    console.log(`Finishing large file upload...`);
     const req = new FinishLargeFileRequest({
       apiUrl: new URL(this.b2Api!.auths!.apiUrl),
       authToken: this.b2Api!.auths!.authorizationToken,
@@ -129,6 +132,7 @@ export class UploadOperation extends Operation {
       partSha1Array,
     });
     await req.send();
+    console.log(`Finished!`);
   }
 
   private async uploadParts(
@@ -144,6 +148,7 @@ export class UploadOperation extends Operation {
     const MAX_FAILURES = 3;
     await using srcFileHandle = await ScopedFileHandle.fromPath(this.srcFilePath);
     while (bytesUploaded < syncedUploadProgress.srcFileLen) {
+      console.log(`Uploading part ${curPartNum}...`);
       if (consecutiveAuthFailures > MAX_FAILURES) {
         throw new Bigb2Error('Max consecutive auth failures reached. Aborting.');
       }
@@ -197,20 +202,24 @@ export class UploadOperation extends Operation {
         consecutiveBackoffErrors = 0;
         bytesUploaded += fileChunk.length;
         curPartNum += 1;
+        console.log(`Uploaded part ${curPartNum - 1}! (${bytesUploaded / syncedUploadProgress.srcFileLen}%)`);
         uploadParts.push({
           partNum: curPartNum,
           contentLength: fileChunk.length,
           contentSha1: contentHash,
-        })
+        });
       } catch (err: unknown) {
         if (err instanceof B2ApiError) {
           if (err.isExpiredAuthError()) {
+            console.log(`Expired auth error ${err}`);
             consecutiveAuthFailures += 1;
             continue;
           } else if (err.isServiceUnavailableError503()) {
+            console.log(`503 Service unavailable error ${err}`);
             consecutiveUploadAuthFailures += 1;
             continue;
           } else if (err.shouldBackOffRetry()) {
+            console.log(`Backoff error ${err}`);
             consecutiveBackoffErrors += 1;
             continue;
           } else {
@@ -224,7 +233,7 @@ export class UploadOperation extends Operation {
       }
     }
     if (bytesUploaded !== syncedUploadProgress.srcFileLen) {
-      throw new Bigb2Error('Finished uploading parts but bytesUploaded !== srcFileLen. Aborting.');
+      throw new Bigb2Error('Finished uploading parts but bytes uploaded not equal to source file length. Aborting.');
     }
     return uploadParts;
   }

@@ -4,6 +4,7 @@ import * as http from 'node:http';
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
 import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { assertFieldIs } from 'utils/assert-field-is';
 
 export interface Part {
   fileId: string;
@@ -14,7 +15,7 @@ export interface Part {
 
 export interface ListPartsResponse {
   parts: Part[];
-  nextPartNumber: number;
+  nextPartNumber: number | null;
 }
 
 export class ListPartsRequest {
@@ -30,6 +31,7 @@ export class ListPartsRequest {
     return new Promise<ListPartsResponse>(
       (resolve, reject) => {
         const url: URL = UrlProvider.listPartsUrl(this.args.apiUrl);
+        url.searchParams.append('fileId', this.args.fileId);
         const req: http.ClientRequest = https.request(
           url,
           {
@@ -54,20 +56,20 @@ export class ListPartsRequest {
             }
             try {
               return resolve({
-                parts: resBodyObj!.files!.map((value: any) => {
+                parts: assertFieldIs(resBodyObj, 'parts').map((value: any) => {
                   return {
                     fileId: String(assertPrimitiveField(value, 'fileId', 'string')),
-                    partNumber: String(assertPrimitiveField(value, 'partNumber', 'string')),
-                    contentLength: String(assertPrimitiveField(value, 'contentLength', 'string')),
+                    partNumber: Number(assertPrimitiveField(value, 'partNumber', 'number')),
+                    contentLength: Number(assertPrimitiveField(value, 'contentLength', 'number')),
                     contentSha1: String(assertPrimitiveField(value, 'contentSha1', 'string')),
                   }
                 }),
-                nextPartNumber: Number(assertPrimitiveField(resBodyObj, 'nextPartNumber', 'number')),
+                nextPartNumber: resBodyObj.nextPartNumber ? resBodyObj.nextPartNumber : null,
               });
             } catch (err: unknown) {
               if (err instanceof Error) {
                 return reject(new B2ApiError(
-                  `Failed to parse ListParts. JSON=${resBodyJson}`,
+                  `Failed to parse ListParts response. JSON=${resBodyJson}`,
                   { cause: err }
                 ));
               }

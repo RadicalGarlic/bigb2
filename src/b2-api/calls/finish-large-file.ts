@@ -71,7 +71,10 @@ export class FinishLargeFileRequest {
             partSha1Array: this.args.partSha1Array,
           }),
           (err: Error | null | undefined) => {
-            return reject(new B2ApiError(`Failed send UploadPart`, err ? { cause: err } : undefined));
+            if (err instanceof Error) {
+              return reject(new B2ApiError(`Failed send UploadPart`, { cause: err }));
+            }
+            // success!
           }
         );
         req.end();

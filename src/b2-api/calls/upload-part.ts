@@ -28,7 +28,12 @@ export class UploadPartRequest {
         const req: http.ClientRequest = https.request(
           this.args.uploadPartUrl,
           {
-            headers: { Authorization: this.args.authToken },
+            headers: {
+              Authorization: this.args.authToken ,
+              'Content-Length': this.args.contentLength,
+              'X-Bz-Part-Number': this.args.partNumber,
+              'X-Bz-Content-Sha1': this.args.sha1Hex,
+            },
             method: 'POST'
           }
         );
