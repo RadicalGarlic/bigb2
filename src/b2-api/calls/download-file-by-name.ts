@@ -2,15 +2,6 @@ import * as https from 'node:https';
 import * as http from 'node:http';
 import * as path from 'node:path';
 
-export class ByteRange {
-  constructor(public start: number, public end: number) {
-  }
-
-  toString(): string {
-    return `${this.start.toString()}-${this.end.toString()}`;
-  }
-}
-
 export class DownloadFileByNameRequest {
   constructor(
     private downloadUrl: URL,

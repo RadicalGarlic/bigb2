@@ -3,17 +3,10 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
+import { ByteRange } from 'b2-api/utils/byte-range';
 
 export interface DownloadFileByIdResponse {
   payload: Buffer;
-}
-
-export class ByteRange {
-  constructor(public start: number, public end: number) { }
-
-  toString(): string {
-    return `bytes=${this.start}-${this.end}`;
-  }
 }
 
 export class DownloadFileByIdRequest {
@@ -31,7 +24,7 @@ export class DownloadFileByIdRequest {
       if (this.range) {
         headers = {
           Authorization: this.authToken,
-          Range: this.range.toString(),
+          Range: this.range.toHeaderValue(),
         }
       } else {
         headers = { Authorization: this.authToken };

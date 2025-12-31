@@ -5,10 +5,10 @@ import { B2Api } from 'b2-api/b2-api';
 import { Bucket, getBucketByName } from 'b2-iface/buckets';
 import { File, getFileByPath } from 'b2-iface/files';
 import {
-  ByteRange,
   DownloadFileByIdRequest,
   DownloadFileByIdResponse,
 } from 'b2-api/calls/download-file-by-id';
+import { ByteRange } from 'b2-api/utils/byte-range';
 import { Bigb2Error } from 'bigb2-error';
 import { Operation } from 'operations/operation';
 import { UsageError } from 'operations/usage-error';

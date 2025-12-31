@@ -6,7 +6,7 @@ import { PathReporter } from 'io-ts/PathReporter';
 import { isLeft } from 'fp-ts/lib/Either';
 
 import { UrlProvider } from 'b2-iface/url-provider';
-import { Range } from 'b2-iface/range';
+import { ByteRange } from 'b2-api/utils/byte-range';
 
 export class CopyPartRequest {
   constructor(private args: {
@@ -14,7 +14,7 @@ export class CopyPartRequest {
     authToken: string,
     srcFileId: string,
     dstLargeFileId: string,
-    range?: Range,
+    range?: ByteRange,
     partNumber: number,
   }) { }
 
