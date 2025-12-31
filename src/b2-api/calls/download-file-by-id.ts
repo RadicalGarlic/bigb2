@@ -53,12 +53,15 @@ export class DownloadFileByIdRequest {
             const resBodyBuffer: Buffer = Buffer.concat(chunks);
             const resBodyString: string = resBodyBuffer.toString('utf-8');
             if (B2ApiError.isB2ApiError(resBodyString)) {
-              return reject(B2ApiError.fromJson(resBodyString));
+              return reject(B2ApiError.fromJson(resBodyString, 'DownloadFileById error'));
             }
             return resolve({ payload: resBodyBuffer });
           });
         }
       );
+      req.on('error', (err: Error) => {
+        return reject(new B2ApiError('DownloadFileById failed', { cause: err }));
+      });
       req.end();
     });
   }
