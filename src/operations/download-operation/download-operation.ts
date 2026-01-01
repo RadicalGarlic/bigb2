@@ -109,6 +109,7 @@ export class DownloadOperation extends Operation {
           if (consecutiveAuthFailures > 0) {
             console.log(`Auth expired. Re-authing.`);
             this.b2Api = await B2Api.fromKeyFile();
+            console.log(`Re-authed. New recommended part size is ${this.b2Api!.auths!.recommendedPartSize}`);
           }
 
           const req = new DownloadFileByIdRequest(
