@@ -119,7 +119,7 @@ export class DownloadOperation extends Operation {
               curDownloaded,
               Math.min(
                 curDownloaded + this.b2Api!.auths!.recommendedPartSize - 1,
-                srcFile.contentLength
+                srcFile.contentLength - 1
               ),
             )
           );
