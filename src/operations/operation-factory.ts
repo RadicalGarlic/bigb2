@@ -3,6 +3,7 @@ import { Operation } from "./operation";
 import { UsageError } from "./usage-error";
 import { DownloadOperation } from "./download-operation/download-operation";
 import { UploadOperation } from "./upload-operation";
+import { ListUnfinishedLargeFilesOperation } from "./list-unfinished-large-files-operation";
 
 export class OperationFactory {
   private constructor() { }
@@ -19,6 +20,8 @@ export class OperationFactory {
       operation = new DownloadOperation();
     } else if (cliArgs[2] === 'upload') {
       operation = new UploadOperation();
+    } else if (cliArgs[2] === 'list-unfinished-large-files') {
+      operation = new ListUnfinishedLargeFilesOperation();
     }
     if (!operation) {
       throw new UsageError('Unrecognized arg');

@@ -3,7 +3,6 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { B2Api } from 'b2-api/b2-api';
 import { assertPrimitiveField } from 'utils/assert-primitive-field';
 
 export interface UnfinishedLargeFile {
@@ -57,7 +56,7 @@ export class ListUnfinishedLargeFilesRequest {
         req.on('response', (res: http.IncomingMessage) => {
           const resChunks: Buffer[] = [];
           res.on('error', (err: Error) => {
-            reject(new B2ApiError('ListUnfinishedLargeFiles error', { cause: err }));
+            return reject(new B2ApiError('ListUnfinishedLargeFiles error', { cause: err }));
           });
           res.on('data', (chunk: Buffer) => { resChunks.push(chunk); });
           res.on('end', () => {
@@ -95,6 +94,6 @@ export class ListUnfinishedLargeFilesRequest {
         });
         req.end();
       }
-    )
+    );
   }
 }

@@ -9,7 +9,8 @@ function getUsageMessage(): string {
   return 'Usage: '
     + `${os.EOL}${INDENT}${APP_NAME} list-buckets`
     + `${os.EOL}${INDENT}${APP_NAME} download bucketName:file/path [dstFilePath]`
-    + `${os.EOL}${INDENT}${APP_NAME} upload srcFile bucketName:file/path`;
+    + `${os.EOL}${INDENT}${APP_NAME} upload srcFile bucketName:file/path`
+    + `${os.EOL}${INDENT}${APP_NAME} list-unfinished-large-files bucketName`;
     // + os.EOL + indent + `bigb2 copy ${CopyOperation.SRC_ARG} someBucket:some/file/path ${CopyOperation.DST_ARG} someOtherBucket:some/other/file/path`;
 }
 
