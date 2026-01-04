@@ -299,16 +299,13 @@ export class UploadOperation extends Operation {
     const unfinishedUploads: UnfinishedLargeFile[] = await getAllUnfinishedLargeFiles(
       this.b2Api!,
       bucketId,
-      this.srcFilePath,
+      this.dstFilePath,
     );
     if (unfinishedUploads.length === 0) {
       return null;
     }
     if (unfinishedUploads.length > 1) {
-      throw new Bigb2Error(`Multiple unfinished uploads found for file "${this.srcFilePath}" in bucketId=${bucketId}`);
-    }
-    if (unfinishedUploads[0].fileName !== this.dstFilePath) {
-      throw new Bigb2Error(`Name mismatch between unfinished upload (${unfinishedUploads[0].fileName}) and destination file (${this.dstFilePath})`);
+      throw new Bigb2Error(`Multiple unfinished uploads found for file "${this.dstFilePath}" in bucketId=${bucketId}`);
     }
 
     const uploadParts: UnfinishedLargeFilePart[] = await getAllUnfinishedLargeFileParts(
