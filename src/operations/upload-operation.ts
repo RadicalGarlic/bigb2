@@ -148,7 +148,6 @@ export class UploadOperation extends Operation {
     const MAX_FAILURES = 3;
     await using srcFileHandle = await ScopedFileHandle.fromPath(this.srcFilePath);
     while (bytesUploaded < syncedUploadProgress.srcFileLen) {
-      console.log(`Uploading part ${curPartNum}...`);
       if (consecutiveAuthFailures > MAX_FAILURES) {
         throw new Bigb2Error('Max consecutive auth failures reached. Aborting.');
       }
@@ -202,7 +201,7 @@ export class UploadOperation extends Operation {
         consecutiveBackoffErrors = 0;
         bytesUploaded += fileChunk.length;
         curPartNum += 1;
-        console.log(`Uploaded part ${curPartNum - 1}! (${bytesUploaded / syncedUploadProgress.srcFileLen}%)`);
+        console.log(`Uploaded part ${curPartNum - 1} (${bytesUploaded / syncedUploadProgress.srcFileLen}%)`);
         uploadParts.push({
           partNum: curPartNum,
           contentLength: fileChunk.length,
