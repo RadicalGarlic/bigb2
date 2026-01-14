@@ -2,7 +2,7 @@ import * as https from 'node:https';
 import * as http from 'node:http';
 
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { peckPrimitiveField } from 'utils/peck';
 
 export interface UploadFileResponse {
   fileId: string;
@@ -59,11 +59,11 @@ export class UploadFileRequest {
                 return reject(B2ApiError.fromObj(resBodyObj, 'UploadFile failed'));
               }
               return resolve({
-                fileId: String(assertPrimitiveField(resBodyObj, 'fileId', 'string')),
-                fileName: String(assertPrimitiveField(resBodyObj, 'fileName', 'string')),
-                bucketId: String(assertPrimitiveField(resBodyObj, 'bucketId', 'string')),
-                contentLength: Number(assertPrimitiveField(resBodyObj, 'contentLength', 'number')),
-                contentSha1: String(assertPrimitiveField(resBodyObj, 'contentSha1', 'string')),
+                fileId: String(peckPrimitiveField(resBodyObj, 'fileId', 'string')),
+                fileName: String(peckPrimitiveField(resBodyObj, 'fileName', 'string')),
+                bucketId: String(peckPrimitiveField(resBodyObj, 'bucketId', 'string')),
+                contentLength: Number(peckPrimitiveField(resBodyObj, 'contentLength', 'number')),
+                contentSha1: String(peckPrimitiveField(resBodyObj, 'contentSha1', 'string')),
               });
             } catch (err: unknown) {
               if (err instanceof Error) {

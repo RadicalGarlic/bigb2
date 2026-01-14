@@ -3,7 +3,7 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { peckPrimitiveField } from 'utils/peck';
 
 export interface UnfinishedLargeFile {
   accountId: string;
@@ -73,11 +73,11 @@ export class ListUnfinishedLargeFilesRequest {
                 nextFileId: resBodyObj.nextFileId ?? null,
                 files: resBodyObj!.files!.map((value: any) => {
                   return {
-                    accountId: String(assertPrimitiveField(value, 'accountId', 'string')),
-                    action: String(assertPrimitiveField(value, 'action', 'string')),
-                    fileId: String(assertPrimitiveField(value, 'fileId', 'string')),
-                    fileName: String(assertPrimitiveField(value, 'fileName', 'string')),
-                    contentLength: Number(assertPrimitiveField(value, 'contentLength', 'number')),
+                    accountId: String(peckPrimitiveField(value, 'accountId', 'string')),
+                    action: String(peckPrimitiveField(value, 'action', 'string')),
+                    fileId: String(peckPrimitiveField(value, 'fileId', 'string')),
+                    fileName: String(peckPrimitiveField(value, 'fileName', 'string')),
+                    contentLength: Number(peckPrimitiveField(value, 'contentLength', 'number')),
                   };
                 }),
               });

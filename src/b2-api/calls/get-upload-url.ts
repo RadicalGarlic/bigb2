@@ -3,7 +3,7 @@ import * as http from 'http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { peckPrimitiveField } from 'utils/peck';
 
 export interface GetUploadUrlResponse {
   uploadUrl: string,
@@ -44,9 +44,9 @@ export class GetUploadUrlRequest {
             }
             try {
               return resolve({
-                uploadUrl: String(assertPrimitiveField(resBodyObj, 'uploadUrl', 'string')),
-                uploadAuthorizationToken: String(assertPrimitiveField(resBodyObj, 'authorizationToken', 'string')),
-                bucketId: String(assertPrimitiveField(resBodyObj, 'bucketId', 'string')),
+                uploadUrl: String(peckPrimitiveField(resBodyObj, 'uploadUrl', 'string')),
+                uploadAuthorizationToken: String(peckPrimitiveField(resBodyObj, 'authorizationToken', 'string')),
+                bucketId: String(peckPrimitiveField(resBodyObj, 'bucketId', 'string')),
               });
             } catch (err: unknown) {
               if (err instanceof Error) {

@@ -2,7 +2,7 @@ import * as https from 'node:https';
 import * as http from 'node:http';
 
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/assert-primitive-field';
+import { peckPrimitiveField } from 'utils/peck';
 import { UrlProvider } from 'b2-iface/url-provider';
 
 export interface FinishLargeFileResponse {
@@ -50,9 +50,9 @@ export class FinishLargeFileRequest {
             }
             try {
               return resolve({
-                fileId: String(assertPrimitiveField(resBodyObj, 'fileId', 'string')),
-                bucketId: String(assertPrimitiveField(resBodyObj, 'bucketId', 'string')),
-                contentLength: Number(assertPrimitiveField(resBodyObj, 'contentLength', 'number')),
+                fileId: String(peckPrimitiveField(resBodyObj, 'fileId', 'string')),
+                bucketId: String(peckPrimitiveField(resBodyObj, 'bucketId', 'string')),
+                contentLength: Number(peckPrimitiveField(resBodyObj, 'contentLength', 'number')),
               });
             } catch (err: unknown) {
               if (err instanceof Error) {

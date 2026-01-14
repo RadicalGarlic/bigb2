@@ -1,5 +1,5 @@
 import { Bigb2Error } from "bigb2-error";
-import { assertPrimitiveField } from "utils/assert-primitive-field";
+import { peckPrimitiveField } from "utils/peck";
 import { isNum } from "utils/num-check";
 
 export interface B2ApiErrorBody {
@@ -23,9 +23,9 @@ export class B2ApiError extends Bigb2Error {
         message ? message : 'B2 API error',
         undefined,
         {
-          code: String(assertPrimitiveField(errBody, 'code', 'string')),
+          code: String(peckPrimitiveField(errBody, 'code', 'string')),
           message: errBody.message,
-          status: Number(assertPrimitiveField(errBody, 'status', 'number')),
+          status: Number(peckPrimitiveField(errBody, 'status', 'number')),
         },
       );
     } catch (err: unknown) {

@@ -3,8 +3,7 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/assert-primitive-field';
-import { assertFieldIs } from 'utils/assert-field-is';
+import { peckFieldIs, peckPrimitiveField } from 'utils/peck';
 
 export interface File {
   accountId: string;
@@ -62,14 +61,14 @@ export class ListFileNamesRequest {
             try {
               return resolve({
                 nextFileName: resBodyObj.nextFileName ?? null,
-                files: assertFieldIs(resBodyObj, 'files').map((file: any) => {
+                files: peckFieldIs(resBodyObj, 'files').map((file: any) => {
                   return {
-                    accountId: String(assertPrimitiveField(file, 'accountId', 'string')),
-                    bucketId: String(assertPrimitiveField(file, 'bucketId', 'string')),
-                    fileId: String(assertPrimitiveField(file, 'fileId', 'string')),
-                    fileName: String(assertPrimitiveField(file, 'fileName', 'string')),
-                    contentLength: Number(assertPrimitiveField(file, 'contentLength', 'number')),
-                    action: String(assertPrimitiveField(file, 'action', 'string')),
+                    accountId: String(peckPrimitiveField(file, 'accountId', 'string')),
+                    bucketId: String(peckPrimitiveField(file, 'bucketId', 'string')),
+                    fileId: String(peckPrimitiveField(file, 'fileId', 'string')),
+                    fileName: String(peckPrimitiveField(file, 'fileName', 'string')),
+                    contentLength: Number(peckPrimitiveField(file, 'contentLength', 'number')),
+                    action: String(peckPrimitiveField(file, 'action', 'string')),
                   };
                 }),
               });

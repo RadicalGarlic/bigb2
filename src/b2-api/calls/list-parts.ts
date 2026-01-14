@@ -3,8 +3,7 @@ import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/assert-primitive-field';
-import { assertFieldIs } from 'utils/assert-field-is';
+import { peckFieldIs, peckPrimitiveField } from 'utils/peck';
 
 export interface Part {
   fileId: string;
@@ -56,12 +55,12 @@ export class ListPartsRequest {
             }
             try {
               return resolve({
-                parts: assertFieldIs(resBodyObj, 'parts').map((value: any) => {
+                parts: peckFieldIs(resBodyObj, 'parts').map((value: any) => {
                   return {
-                    fileId: String(assertPrimitiveField(value, 'fileId', 'string')),
-                    partNumber: Number(assertPrimitiveField(value, 'partNumber', 'number')),
-                    contentLength: Number(assertPrimitiveField(value, 'contentLength', 'number')),
-                    contentSha1: String(assertPrimitiveField(value, 'contentSha1', 'string')),
+                    fileId: String(peckPrimitiveField(value, 'fileId', 'string')),
+                    partNumber: Number(peckPrimitiveField(value, 'partNumber', 'number')),
+                    contentLength: Number(peckPrimitiveField(value, 'contentLength', 'number')),
+                    contentSha1: String(peckPrimitiveField(value, 'contentSha1', 'string')),
                   }
                 }),
                 nextPartNumber: resBodyObj.nextPartNumber ? resBodyObj.nextPartNumber : null,

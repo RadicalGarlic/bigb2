@@ -2,10 +2,8 @@ import * as https from 'node:https';
 import * as http from 'node:http';
 
 import { UrlProvider } from 'b2-iface/url-provider';
-import { throwExpression } from 'utils/throw-expression';
 import { B2ApiError } from 'b2-api/b2-api-error';
-import { assertPrimitiveField } from 'utils/assert-primitive-field';
-import { assertFieldIs } from 'utils/assert-field-is';
+import { peckFieldIs, peckPrimitiveField } from 'utils/peck';
 
 export interface AccountKey {
   keyId: string;
@@ -51,12 +49,12 @@ export class AuthorizeAccountRequest {
             try {
               const resBody = JSON.parse(chunks.join(''));
               return resolve({
-                accountId: String(assertPrimitiveField(resBody, 'accountId', 'string')),
-                authorizationToken: String(assertPrimitiveField(resBody, 'authorizationToken', 'string')),
+                accountId: String(peckPrimitiveField(resBody, 'accountId', 'string')),
+                authorizationToken: String(peckPrimitiveField(resBody, 'authorizationToken', 'string')),
                 apiUrl: String(
-                  assertPrimitiveField(
-                    assertFieldIs(
-                      assertFieldIs(resBody, 'apiInfo'),
+                  peckPrimitiveField(
+                    peckFieldIs(
+                      peckFieldIs(resBody, 'apiInfo'),
                       'storageApi',
                     ),
                     'apiUrl',
@@ -64,9 +62,9 @@ export class AuthorizeAccountRequest {
                   )
                 ),
                 downloadUrl: String(
-                  assertPrimitiveField(
-                    assertFieldIs(
-                      assertFieldIs(resBody, 'apiInfo'),
+                  peckPrimitiveField(
+                    peckFieldIs(
+                      peckFieldIs(resBody, 'apiInfo'),
                       'storageApi',
                     ),
                     'downloadUrl',
@@ -74,9 +72,9 @@ export class AuthorizeAccountRequest {
                   )
                 ),
                 recommendedPartSize: Number(
-                  assertPrimitiveField(
-                    assertFieldIs(
-                      assertFieldIs(resBody, 'apiInfo'),
+                  peckPrimitiveField(
+                    peckFieldIs(
+                      peckFieldIs(resBody, 'apiInfo'),
                       'storageApi',
                     ),
                     'recommendedPartSize',
@@ -84,9 +82,9 @@ export class AuthorizeAccountRequest {
                   )
                 ),
                 absoluteMinimumPartSize: Number(
-                  assertPrimitiveField(
-                    assertFieldIs(
-                      assertFieldIs(resBody, 'apiInfo'),
+                  peckPrimitiveField(
+                    peckFieldIs(
+                      peckFieldIs(resBody, 'apiInfo'),
                       'storageApi',
                     ),
                     'absoluteMinimumPartSize',
