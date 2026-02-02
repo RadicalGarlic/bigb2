@@ -50,6 +50,8 @@ interface UploadPartUrlAndAuth {
 
 export class UploadOperation extends Operation {
   public parseCliArgs(cliArgs: string[]): void {
+    // Add explicit resume arg to reduce error chance?
+
     if (cliArgs.length < 5) {
       throw new UsageError('Not enough args');
     }
@@ -72,9 +74,12 @@ export class UploadOperation extends Operation {
       throw new Bigb2Error(`Found existing file in bucket "${bucket.bucketName}" with path "${this.dstFilePath}". Refusing to upload`);
     }
 
+    // Check if unfinished large upload without getting entire progress
     const uploadProgress: UploadProgress | null = await this.getUploadProgress(bucket.bucketId);
+
     const srcFileLen: number = await getFileLength(this.srcFilePath);
     if (uploadProgress || (srcFileLen > this.b2Api.auths!.recommendedPartSize)) {
+      // Should start requiring sha1?
       await this.largeUpload(bucket.bucketId, uploadProgress ?? undefined);
     } else {
       await this.smallUpload(bucket.bucketId);
@@ -111,7 +116,7 @@ export class UploadOperation extends Operation {
 
   private async largeUpload(
     bucketId: string,
-    uploadProgress?: UploadProgress
+    uploadProgress?: UploadProgress // Don't require this as we need to do it page by page
   ): Promise<void> {
     console.log('Beginning large file upload');
     const syncedUploadProgress: SyncUploadProgressResult = await this.syncUploadProgress(bucketId, uploadProgress);
@@ -250,6 +255,8 @@ export class UploadOperation extends Operation {
     };
   }
 
+  // This method doesn't exactly do what it's named
+  // Have this do the actual checksumming in a loop
   private async syncUploadProgress(
     bucketId: string,
     uploadProgress?: UploadProgress
@@ -294,7 +301,7 @@ export class UploadOperation extends Operation {
     }
   }
 
-  private async getUploadProgress(bucketId: string): Promise<UploadProgress | null> {
+  private async getUploadProgress(bucketId: string, partial: boolean = false): Promise<UploadProgress | null> {
     const unfinishedUploads: UnfinishedLargeFile[] = await getAllUnfinishedLargeFiles(
       this.b2Api!,
       bucketId,
@@ -307,10 +314,13 @@ export class UploadOperation extends Operation {
       throw new Bigb2Error(`Multiple unfinished uploads found for file "${this.dstFilePath}" in bucketId=${bucketId}`);
     }
 
+    // Can't do this anymore. OOM on very large files.
     const uploadParts: UnfinishedLargeFilePart[] = await getAllUnfinishedLargeFileParts(
       this.b2Api!,
       unfinishedUploads[0].fileId,
     );
+
+    // Have to also return total bytes verified and num parts verified
     const srcFileHandle = await fsPromises.open(this.srcFilePath, 'r');
     try {
       let bytesVerified = 0;
