@@ -23,6 +23,8 @@ export class DownloadProgress {
     public chunks: DownloadProgressChunk[],
   ) { }
 
+  // Change file format to one JSON per line rather than entire JSON file
+
   public static async initFromFiles(
     downloadFilePath: string,
     downloadProgressFilePath?: string
