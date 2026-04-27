@@ -13,6 +13,7 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "@types/node": "^20.19.27",
+    "memfs": "^4.57.2",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
     "vitest": "^4.1.5",
