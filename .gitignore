@@ -1,4 +1,5 @@
-__pycache__
+__pycache__/
 *.swp
-node_modules
-dist
+node_modules/
+dist/
+coverage/
