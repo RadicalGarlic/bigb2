@@ -13,7 +13,7 @@
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@types/node": "^20.19.27",
+    "@types/node": "^20.19.39",
     "@vitest/coverage-v8": "^4.1.5",
     "memfs": "^4.57.2",
     "ts-loader": "^9.5.4",
