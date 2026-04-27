@@ -1,4 +1,4 @@
-import { beforeEach, expect, test, vi } from 'vitest'
+import { describe, beforeEach, expect, test, vi } from 'vitest'
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
 import { fs, vol } from 'memfs'
@@ -10,14 +10,16 @@ beforeEach(() => {
   vol.reset()
 });
 
-test('filePathExists does not exist', async () => {
-  const filename = '/not_found';
-  await fs.promises.rm(filename, { force: true });
-  expect(await filePathExists(filename)).toBe(false);
-});
+describe('filePathExists', () => {
+  test('file does exist', async () => {
+    const filename = '/file';
+    await fs.promises.writeFile(filename, '');
+    expect(await filePathExists(filename)).toBe(true);
+  });
 
-test('filePathExists does not exist', async () => {
-  const filename = '/file';
-  await fs.promises.writeFile(filename, '');
-  expect(await filePathExists(filename)).toBe(true);
+  test('file does not exist', async () => {
+    const filename = '/not_found';
+    await fs.promises.rm(filename, { force: true });
+    expect(await filePathExists(filename)).toBe(false);
+  });
 });
