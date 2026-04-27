@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "build": "npx webpack",
+    "test": "npx vitest",
     "clean": "rm -rf dist/*"
   },
   "author": "",
